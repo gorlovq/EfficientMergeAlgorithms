@@ -255,20 +255,25 @@ IterContainer hl_dynamic(IterContainer& A, IterContainer& B) {
             d = static_cast<int>(std::floor(std::log2(static_cast<double>(n) / m)));
         }
 
-        int pow2d = std::pow(2, d)
+        int pow2d = std::pow(2, d);
 
-        int c1 = n - pow2d;
-        int c2 = n - ((17 * pow2d) / 14);
-        int c3 = n + 1 - ((12 * pow2d) / 7);
-        int c4 = n + 1 - ((41 * pow2d) / 28);
+        int c1 = n - pow2d - 1;
+        int c2 = n - ((17 * pow2d) / 14) - 1;
+        int c3 = n + 1 - ((12 * pow2d) / 7) - 1;
+        int c4 = n + 1 - ((41 * pow2d) / 28) - 1;
 
         c1 = std::clamp(c1, 0, n - 1);
         c2 = std::clamp(c2, 0, n - 1);
         c3 = std::clamp(c3, 0, n - 1);
         c4 = std::clamp(c4, 0, n - 1);
 
+         std::cout << "m: " << m << ", n: " << n << ", d: " << d << "\n";
+        std::cout << "c1: " << c1 << ", c2: " << c2 << ", c3: " << c3 << ", c4: " << c4 << "\n";
+
+
         // Step 2: Compare A[m - 1] and B[c1]
         if (m >= 1 && c1 >= 0 && c1 < n && A[m - 1] < B[c1]) {
+            std::cout << "Skipping insertion, moving to c1 index: " << c1 << "\n";
             n = c1;
             continue; // Go to Step 1
         } else if (m >= 2 && c2 >= 0 && c2 < n && A[m - 2] < B[c2]) {
@@ -277,18 +282,23 @@ IterContainer hl_dynamic(IterContainer& A, IterContainer& B) {
             int insert_index = c1 + 1;
             if (insert_index >= B.size()) {
                 B.push_back(A[m - 1]);
+                std::cout << "Inserted value " << A[m - 1] << " at index " << n << " (end)\n";
             } else {
                 auto insert_pos = std::upper_bound(B.begin() + insert_index, B.begin() + n, A[m - 1]);
+                int idx = static_cast<int>(insert_pos - B.begin());
                 B.insert(insert_pos, A[m - 1]);
+                std::cout << "Inserted value " << A[m - 1] << " at index " << idx << "\n";
             }
 
-            n = c2; 
+            n = c2;
             m -= 1;
 
             continue; // Go to Step 1
         } else if (m >= 3 && c3 >= 0 && c3 < n && A[m - 3] < B[c3]) {
             // Step 4: Compare A[m - 3] and B[c3]
             // Merge A[m - 3 : m - 1] with B[c2 + 1 : n - 1]
+            std::cout << "Merging segments A[" << (m - 3) << ":" << (m - 1) << "] with B[" << (c2 + 1) << ":" << (n - 1) << "]\n";
+
             auto a_start = A.begin() + (m - 2);
             auto a_end = A.begin() + m;
             auto b_start = B.begin() + c2 + 1;
@@ -312,20 +322,22 @@ IterContainer hl_dynamic(IterContainer& A, IterContainer& B) {
             m -= 2;
 
             continue; // Go to Step 1
-        } else if (m >= 4 && c4 >= 0 && c4 <= n) {
-            // Step 6: Merge A[m - 4 : m - 1] with B[c4 : n - 1]
+        } else if (m >= 3 && c4 >= 0 && c4 <= n) {
+            // Step 6: Merge A[m - 3 : m - 1] with B[c4 : n - 1]
+            std::cout << "Merging A[" << (m - 3) << ":" << (m - 1) << "] with B[" << c4 << ":" << (n - 1) << "]\n";
+
             auto q_it = std::upper_bound(B.begin() + c4, B.begin() + n, A[m - 3]);
             int q = static_cast<int>(q_it - B.begin()) - 1;
 
             if (q_it == B.begin() + n) {
-                // A[m - 4] is greater than all elements in B[c4:n - 1]
+                // A[m - 3] is greater than all elements in B[c4:n - 1]
                 // Append remaining elements of A to B
-                B.insert(B.end(), A.begin() + m - 4, A.begin() + m);
-                n += 4; // Update n with the number of elements added
-                m -= 4;
+                B.insert(B.begin() + n, A.begin() + m - 3, A.begin() + m);
+                n += 3; // Update n with the number of elements added
+                m -= 3;
                 continue; // Go to Step 1
             } else {
-                auto a_start = A.begin() + (m - 4);
+                auto a_start = A.begin() + (m - 3);
                 auto a_end = A.begin() + m;
                 auto b_start = B.begin() + c4;
                 auto b_end = B.begin() + n;
@@ -335,21 +347,34 @@ IterContainer hl_dynamic(IterContainer& A, IterContainer& B) {
 
                 std::merge(a_start, a_end, b_start, b_end, std::back_inserter(temp));
 
+                std::cout << "Erasing B[" << (b_start - B.begin()) << ":" << (b_end - B.begin() - 1) << "]\n";
+
                 // Replace B[c4 : n - 1] with merged temp
                 B.erase(b_start, b_end);
                 B.insert(B.begin() + c4, temp.begin(), temp.end());
 
+                // Validate that B is sorted after the merge
+                bool is_B_sorted = std::is_sorted(B.begin(), B.end());
+                if (!is_B_sorted) {
+                    std::cerr << "Validation failed: B is not sorted after merge.\n";
+                    std::terminate(); // Exit to investigate the issue
+                }
+
                 n = q + 1;
-                m -= 4;
+                m -= 3;
                 continue; // Go to Step 1
             }
         } else {
             // Handle remaining elements when m < 4
+            std::cout << "Remaining elements in A to insert (m < 4):\n";
             for (int i = m - 1; i >= 0; --i) {
                 auto insert_pos = std::upper_bound(B.begin(), B.begin() + n, A[i]);
+                int idx = static_cast<int>(insert_pos - B.begin()); // Compute the insertion index
                 B.insert(insert_pos, A[i]);
+                std::cout << "Inserted value " << A[i] << " at index " << idx << "\n";
                 n += 1;
             }
+            std::cout << "Finished inserting remaining elements.\n";
             m = 0;
             break;
         }
