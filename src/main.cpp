@@ -1,31 +1,7 @@
 #include <iostream>
 #include <vector>
-#include <numeric> 
 #include "framework/framework.hpp"
 #include "algorithms/algorithms.hpp"
-template <typename IterContainer>
-void test_hl_dynamic(IterContainer A, IterContainer B, const IterContainer& expected) {
-    // Run hl_dynamic
-    IterContainer result_hl_dynamic = hl_dynamic(A, B);
-
-    // Print the input and output for clarity
-    std::cout << "A: ";
-    for (const auto& a : A) std::cout << a << " ";
-    std::cout << "\nB: ";
-    for (const auto& b : B) std::cout << b << " ";
-    std::cout << "\nResult: ";
-    for (const auto& r : result_hl_dynamic) std::cout << r << " ";
-    std::cout << "\nExpected: ";
-    for (const auto& e : expected) std::cout << e << " ";
-
-    // Check correctness
-    if (result_hl_dynamic == expected) {
-        std::cout << "\nTest passed ✅\n" << std::endl;
-    } else {
-        std::cout << "\nTest failed ❌\n" << std::endl;
-    }
-}
-
 
 int main() {
     int size_a = 100; // Size of first sorted vector
@@ -108,20 +84,10 @@ int main() {
 
     std::vector<int> result_hl_dynamic = hl_dynamic(a, b);
 
-    if (result.size() != result_hl_dynamic.size()) {
-        std::cout << "Sizes differ. Cannot compare completely.\n";
+    if (result == result_hl_dynamic) {
+        std::cout << "hl_dynamic is correct\n" << std::endl;
     } else {
-        for (size_t i = 0; i < result.size(); ++i) {
-            if (result[i] != result_hl_dynamic[i]) {
-                std::cout << "First mismatch at index " << i << ":\n";
-                size_t start = (i > 5) ? i - 5 : 0;
-                size_t end = std::min(i + 5, result.size());
-                for (size_t j = start; j < end; ++j) {
-                    std::cout << "Index " << j << ": Expected = " << result[j] << ", Actual = " << result_hl_dynamic[j] << std::endl;
-                }
-                break;
-            }
-        }
+        std::cout << "hl_dynamic is incorrect\n" << std::endl;
     }
 
     return 0;
