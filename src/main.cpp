@@ -11,7 +11,7 @@ int main() {
     std::vector<int> b;
     std::vector<int> result;
 
-    generate_sorted_vectors(size_a, size_b, a, b, result);
+    generate_sorted_vectors(size_a, size_b, a, b, result, CornerCaseType::RANDOM);
 
     // Optionally print some elements of the merged result for verification
     std::cout << "First 10 elements of merged vector: ";

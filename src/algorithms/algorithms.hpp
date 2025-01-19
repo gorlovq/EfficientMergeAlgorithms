@@ -255,7 +255,7 @@ IterContainer hl_dynamic(IterContainer& A, IterContainer& B) {
             d = static_cast<int>(std::floor(std::log2(static_cast<double>(n) / m)));
         }
 
-        int pow2d = std::pow(2, d)
+        int pow2d = std::pow(2, d);
 
         int c1 = n - pow2d;
         int c2 = n - ((17 * pow2d) / 14);
