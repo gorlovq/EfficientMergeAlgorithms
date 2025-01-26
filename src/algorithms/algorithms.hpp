@@ -8,7 +8,7 @@
 #include <cmath>
 #include <functional>
 
-#include "help_functions.hpp"
+#include "common.hpp"
 
 // Standard merging of 2 sorted arrays with n and m lenghts
 template <typename IterContainer>
@@ -19,13 +19,7 @@ IterContainer two_way_merge(const IterContainer& a, const IterContainer& b) {
     typename IterContainer::iterator k_iter = r.begin(); // Pointer for insertion
 
     while (a_left != a_right && b_left != b_right) {
-        if (*a_left <= *b_left) {
-            *k_iter = *a_left;
-            a_left++;
-        } else {
-            *k_iter = *b_left;
-            b_left++;
-        }
+        *k_iter = (*a_left <= *b_left) ? *a_left++ : *b_left++;
         k_iter++;
     }
 
