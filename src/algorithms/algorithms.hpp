@@ -8,9 +8,11 @@
 #include <cmath>
 #include <functional>
 
+#include "help_functions.hpp"
+
 // Standard merging of 2 sorted arrays with n and m lenghts
 template <typename IterContainer>
-IterContainer tape_merge(const IterContainer& a, const IterContainer& b) {
+IterContainer two_way_merge(const IterContainer& a, const IterContainer& b) {
     auto [a_left, a_right, b_left, b_right] = std::array<typename IterContainer::const_iterator, 4>{{a.begin(), a.end(), b.begin(), b.end()}};
     IterContainer r(a.size() + b.size()); // Resulting vector
 
@@ -84,13 +86,15 @@ IterContainer hla(const IterContainer& a, const IterContainer& b) {
 
     typename IterContainer::iterator k_iter = r.end(); // Pointer for insertion
 
+    auto [m, n, t, s] = std::array<int, 4>{{0, 0, 0, 0}};
+
     while (a_left != a_right && b_left != b_right) {
         // H1
-        int t, s;
-        auto [m, n] = std::array<int, 2>{{static_cast<int>(std::distance(a_left, a_right)), static_cast<int>(std::distance(b_left, b_right))}};
+        m = static_cast<int>(std::distance(a_left, a_right));
+        n = static_cast<int>(std::distance(b_left, b_right));
         if (m > n) {
             t = std::floor(std::log2(m / n));
-            s = std::pow(2, t);
+            s = pow2(t);
 
             // H4
             if (*(b_right - 1) < *(a_right - s)) {
@@ -102,7 +106,7 @@ IterContainer hla(const IterContainer& a, const IterContainer& b) {
         }
         else {
             t = std::floor(std::log2(n / m));
-            s = std::pow(2, t);
+            s = pow2(t);
 
             // H2
             if (*(a_right - 1) < *(b_right - s)) {
@@ -208,7 +212,7 @@ IterContainer hl_static(IterContainer& a, IterContainer& b) {
 
         // t < 0 When n is Less Than m
         // t = 0 When n is Equal to m
-        if (n < std::pow(2, t) || t <= 0) {
+        if (n < pow2(t) || t <= 0) {
             // Step 6: Insert elements of A into B using binary insertion
             for (int i = 0; i < m; ++i) {
                 binary_insertion(b, a[i]);
@@ -218,7 +222,7 @@ IterContainer hl_static(IterContainer& a, IterContainer& b) {
         }
 
         // Step 3: Compare A[m-1] with B[n - 2^t]
-        int k = n - std::pow(2, t);
+        int k = n - pow2(t);
 
         if (a[m - 1] < b[k]) {
             n = k;
@@ -255,7 +259,7 @@ IterContainer hl_dynamic(IterContainer& A, IterContainer& B) {
             d = static_cast<int>(std::floor(std::log2(static_cast<double>(n) / m)));
         }
 
-        int pow2d = std::pow(2, d);
+        int pow2d = pow2(d);
 
         int c1 = n - pow2d;
         int c2 = n - ((17 * pow2d) / 14);
