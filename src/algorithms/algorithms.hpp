@@ -19,8 +19,7 @@ IterContainer two_way_merge(const IterContainer& a, const IterContainer& b) {
     typename IterContainer::iterator k_iter = r.begin(); // Pointer for insertion
 
     while (a_left != a_right && b_left != b_right) {
-        *k_iter = (*a_left <= *b_left) ? *a_left++ : *b_left++;
-        k_iter++;
+        *k_iter++ = (*a_left <= *b_left) ? *a_left++ : *b_left++;
     }
 
     if (a_left == a_right) {
