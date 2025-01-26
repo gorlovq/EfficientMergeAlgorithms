@@ -13,21 +13,18 @@ int main() {
 
     generate_sorted_vectors(size_a, size_b, a, b, result, CornerCaseType::RANDOM);
 
-    // Optionally print some elements of the merged result for verification
-    std::cout << "First 10 elements of merged vector: ";
-    for (int i = 0; i < 10 && i < result.size(); ++i) {
-        std::cout << result[i] << " ";
-    }
-    std::cout << "\n" << std::endl;
+    std::cout << "Size of generated a vector is " << size_a << std::endl;
+    std::cout << "Size of generated b vector is " << size_b << std::endl;
+    std::cout << "Size of merged vector is " << size_a + size_b << std::endl << std::endl;
 
-    // Tape Merge
-    std::cout << "Running tape_merge" << std::endl;
-    std::vector<int> result_ape_merge = tape_merge(a, b);
+    // Two way merge
+    std::cout << "Running two_way_merge" << std::endl;
+    std::vector<int> result_two_way_merge = two_way_merge(a, b);
     
-    if (result == result_ape_merge) {
-        std::cout << "tape_merge is correct\n" << std::endl;
+    if (result == result_two_way_merge) {
+        std::cout << "two_way_merge is correct\n" << std::endl;
     } else {
-        std::cout << "tape_merge is incorrect\n" << std::endl;
+        std::cout << "two_way_merge is incorrect\n" << std::endl;
     }
 
     // Simple binary merge
