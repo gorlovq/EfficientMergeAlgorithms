@@ -117,6 +117,123 @@ void generate_sorted_vectors(
             }
         }
         break;
+
+    case CornerCaseType::BLOCK_INTERLEAVE_A_B:
+        {
+            // TODO: make as params.
+            int K = 2;
+            int L = 3;
+
+            a.clear();
+            b.clear();
+            result.clear();
+
+            // TODO: make as params.
+            int minVal = 0;
+            int maxVal = 10000;
+
+            // Calculate the number of blocks needed to fill a and b
+            int num_blocks_a = (size_a + K - 1) / K;
+            int num_blocks_b = (size_b + L - 1) / L;
+
+            // Range for each block
+            int total_blocks = std::max(num_blocks_a, num_blocks_b);
+            int range_per_block = (maxVal - minVal) / (total_blocks * 2); // Two blocks per step (a and b)
+
+            // Fill a and b with controlled ranges
+            int current_value = minVal;
+
+            // Blocks for a and b
+            for (int block = 0; block < total_blocks; ++block) {
+                // Range for block a: [current_value, current_value + range_per_block - 1]
+                for (int i = 0; i < K && a.size() < size_a; ++i) {
+                    a.push_back(rand_in_range(current_value, current_value + range_per_block - 1));
+                }
+                current_value += range_per_block;
+
+                // Range for block b: [current_value, current_value + range_per_block - 1]
+                for (int i = 0; i < L && b.size() < size_b; ++i) {
+                    b.push_back(rand_in_range(current_value, current_value + range_per_block - 1));
+                }
+                current_value += range_per_block;
+            }
+
+            // Sort a and b
+            std::sort(a.begin(), a.end());
+            std::sort(b.begin(), b.end());
+
+            // Build result by alternating blocks
+            int a_idx = 0, b_idx = 0;
+            while (a_idx < size_a || b_idx < size_b) {
+                // Add K elements from a
+                for (int i = 0; i < K && a_idx < size_a; ++i) {
+                    result.push_back(a[a_idx++]);
+                }
+                // Add L elements from b
+                for (int i = 0; i < L && b_idx < size_b; ++i) {
+                    result.push_back(b[b_idx++]);
+                }
+            }
+        }
+        break;
+
+    case CornerCaseType::BLOCK_INTERLEAVE_B_A:
+        {
+            // TODO: Make K and L parameters
+            int K = 2;
+            int L = 3;
+
+            a.clear();
+            b.clear();
+            result.clear();
+
+            // TODO: Make min/max range parameters
+            int minVal = 0;
+            int maxVal = 10000;
+
+            // Calculate number of blocks needed for a and b
+            int num_blocks_a = (size_a + K - 1) / K; // Round up for a's blocks
+            int num_blocks_b = (size_b + L - 1) / L; // Round up for b's blocks
+            int total_blocks = std::max(num_blocks_a, num_blocks_b);
+
+            // Range allocated per block (each a/b pair uses 2 blocks)
+            int range_per_block = (maxVal - minVal) / (total_blocks * 2);
+
+            int current_value = minVal;
+
+            // Generate a and b with controlled ranges
+            for (int block = 0; block < total_blocks; ++block) {
+                // Generate L elements for b in [current_value, current_value + range_per_block - 1]
+                for (int i = 0; i < L && b.size() < size_b; ++i) {
+                    b.push_back(rand_in_range(current_value, current_value + range_per_block - 1));
+                }
+                current_value += range_per_block;
+
+                // Generate K elements for a in [current_value, current_value + range_per_block - 1]
+                for (int i = 0; i < K && a.size() < size_a; ++i) {
+                    a.push_back(rand_in_range(current_value, current_value + range_per_block - 1));
+                }
+                current_value += range_per_block;
+            }
+
+            // Sort a and b
+            std::sort(a.begin(), a.end());
+            std::sort(b.begin(), b.end());
+
+            // Merge by alternating L from b and K from a
+            int a_idx = 0, b_idx = 0;
+            while (a_idx < size_a || b_idx < size_b) {
+                // Add L elements from b
+                for (int i = 0; i < L && b_idx < size_b; ++i) {
+                    result.push_back(b[b_idx++]);
+                }
+                // Add K elements from a
+                for (int i = 0; i < K && a_idx < size_a; ++i) {
+                    result.push_back(a[a_idx++]);
+                }
+            }
+        }
+        break;
     }
 
     std::sort(a.begin(), a.end());
