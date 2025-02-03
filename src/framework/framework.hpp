@@ -16,6 +16,33 @@ enum class CornerCaseType {
     BLOCK_INTERLEAVE_B_A    // result = {{K from b}, {L from a}, {K from b}, {L from a}...};  1<= K,L; K+L<=m+n
 };
 
-void generate_sorted_vectors(int size_a, int size_b, std::vector<int>& a, std::vector<int>& b, std::vector<int>& result,  CornerCaseType caseType);
+// Structure to hold the generated test case data.
+struct MergeTestCase {
+    std::vector<int> a;
+    std::vector<int> b;
+    std::vector<int> result;
+};
+
+/**
+ * Generates two sorted vectors and a merged result according to the chosen corner case.
+ *
+ * For the BLOCK_INTERLEAVE cases, additional parameters control the block sizes.
+ * For all cases, randomMin and randomMax determine the random value range.
+ *
+ * @param size_a     Desired size of vector A.
+ * @param size_b     Desired size of vector B.
+ * @param caseType   Corner case type.
+ * @param randomMin  (Optional) Minimum random value, default 0.
+ * @param randomMax  (Optional) Maximum random value, default 10000.
+ * @param blockSizeA (Optional) Block size for A in block interleaving cases, default 2.
+ * @param blockSizeB (Optional) Block size for B in block interleaving cases, default 3.
+ */
+MergeTestCase generate_sorted_vectors(int size_a,
+                                      int size_b,
+                                      CornerCaseType caseType,
+                                      int randomMin = 0,
+                                      int randomMax = 10000,
+                                      int blockSizeA = 2,
+                                      int blockSizeB = 3);
 
 #endif // FRAMEWORK_H
