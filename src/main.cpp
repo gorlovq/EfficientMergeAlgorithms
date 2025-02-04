@@ -4,18 +4,18 @@
 #include "algorithms/algorithms.hpp"
 
 int main() {
-    int size_a = 100; // Size of first sorted vector
-    int size_b = 10000000; // Size of second sorted vector
+    int size_a = 100; 
+    int size_b = 10000000;
 
-    std::vector<int> a;
-    std::vector<int> b;
-    std::vector<int> result;
+    MergeTestCase test_case = generate_sorted_vectors(size_a, size_b, CornerCaseType::RANDOM);
 
-    generate_sorted_vectors(size_a, size_b, a, b, result, CornerCaseType::RANDOM);
+    std::vector<int> a = test_case.a;
+    std::vector<int> b = test_case.b;
+    std::vector<int> result = test_case.result;
 
-    std::cout << "Size of generated a vector is " << size_a << std::endl;
-    std::cout << "Size of generated b vector is " << size_b << std::endl;
-    std::cout << "Size of merged vector is " << size_a + size_b << std::endl << std::endl;
+    std::cout << "Size of generated a vector is " << a.size() << std::endl;
+    std::cout << "Size of generated b vector is " << b.size() << std::endl;
+    std::cout << "Size of merged vector is " << result.size() << std::endl << std::endl;
 
     // Two way merge
     std::cout << "Running two_way_merge" << std::endl;

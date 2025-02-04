@@ -247,10 +247,9 @@ IterContainer hl_dynamic(IterContainer& A, IterContainer& B) {
 
     while (m > 0) {
         // Step 1: Compute d
-        int d = 0;
-        if (n > m && m > 0) {
-            d = static_cast<int>(std::floor(std::log2(static_cast<double>(n) / m)));
-        }
+        int d = (n > m && m > 0) 
+            ? static_cast<int>(std::floor(std::log2(static_cast<double>(n) / m))) 
+            : 0;
 
         int pow2d = pow2(d);
 
@@ -292,9 +291,7 @@ IterContainer hl_dynamic(IterContainer& A, IterContainer& B) {
             auto b_end = B.begin() + n;
 
             // Ensure b_start is not beyond b_end
-            if (b_start > b_end) {
-                b_start = b_end;
-            }
+            b_start = (b_start > b_end) ? b_end : b_start;
 
             std::vector<typename IterContainer::value_type> temp;
             temp.reserve((a_end - a_start) + (b_end - b_start));
