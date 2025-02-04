@@ -7,11 +7,11 @@ int main() {
     int size_a = 100; 
     int size_b = 10000000;
 
-    MergeTestCase testCase = generate_sorted_vectors(size_a, size_b, CornerCaseType::RANDOM);
+    MergeTestCase test_case = generate_sorted_vectors(size_a, size_b, CornerCaseType::RANDOM);
 
-    std::vector<int> a = testCase.a;
-    std::vector<int> b = testCase.b;
-    std::vector<int> result = testCase.result;
+    std::vector<int> a = test_case.a;
+    std::vector<int> b = test_case.b;
+    std::vector<int> result = test_case.result;
 
     std::cout << "Size of generated a vector is " << a.size() << std::endl;
     std::cout << "Size of generated b vector is " << b.size() << std::endl;

@@ -29,20 +29,20 @@ struct MergeTestCase {
  * For the BLOCK_INTERLEAVE cases, additional parameters control the block sizes.
  * For all cases, randomMin and randomMax determine the random value range.
  *
- * @param size_a     Desired size of vector A.
- * @param size_b     Desired size of vector B.
- * @param caseType   Corner case type.
- * @param randomMin  (Optional) Minimum random value, default 0.
- * @param randomMax  (Optional) Maximum random value, default 10000.
- * @param blockSizeA (Optional) Block size for A in block interleaving cases, default 2.
- * @param blockSizeB (Optional) Block size for B in block interleaving cases, default 3.
+ * @param size_a       Desired size of vector A.
+ * @param size_b       Desired size of vector B.
+ * @param case_type    Corner case type.
+ * @param random_min   (Optional) Minimum random value, default 0.
+ * @param random_max   (Optional) Maximum random value, default 10000.
+ * @param block_size_a (Optional) Block size for A in block interleaving cases, default 2.
+ * @param block_size_b (Optional) Block size for B in block interleaving cases, default 3.
  */
 MergeTestCase generate_sorted_vectors(int size_a,
                                       int size_b,
-                                      CornerCaseType caseType,
-                                      int randomMin = 0,
-                                      int randomMax = 10000,
-                                      int blockSizeA = 2,
-                                      int blockSizeB = 3);
+                                      CornerCaseType case_type,
+                                      int random_min = 0,
+                                      int random_max = 10000,
+                                      int block_size_a = 2,
+                                      int block_size_b = 3);
 
 #endif // FRAMEWORK_H
