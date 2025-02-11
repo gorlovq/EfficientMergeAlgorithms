@@ -7,7 +7,6 @@
 #include <array>
 #include <cmath>
 #include <functional>
-#include <stack>
 
 #include "common.hpp"
 
