@@ -238,6 +238,116 @@ IterContainer hl_static(IterContainer& a, IterContainer& b) {
     return b;
 }
 
+
+template <typename IterContainer>
+IterContainer hl_dynamic2(IterContainer& A, IterContainer& B) {
+    int m = static_cast<int>(A.size());
+    int n = static_cast<int>(B.size());
+
+    size_t i = 0;         // index into A
+    size_t j = 0;         // index into B
+
+    B.reserve(n + m);
+    // A is smaller then B
+
+    while (m - i > 0) {
+        int remainingA = m - i;
+        int remainingB = n - j;
+
+        
+        int d = (remainingB > remainingA) 
+            ? static_cast<int>(std::floor(std::log2(static_cast<double>(n - j) / (m - i)))) 
+            : 0;
+
+        int pow2d = pow2(d);
+
+        int c1 = pow2d;
+        int c2 = (17 * pow2d) / 14;
+        int c3 = ((12 * pow2d) / 7) - 1;
+        int c4 = ((41 * pow2d) / 28) - 1;
+
+        if (m - i < 4) {
+            for (; i < m; i++) {
+                auto pos = std::upper_bound(B.begin() + j, B.end(), A[i]);
+                B.insert(pos, A[i]);
+                n = static_cast<int>(B.size());
+            }
+            break;
+        }
+
+        const int a1 = A[i];      // first element (a1)
+        const int a2 = A[i + 1];  // second element (a2)
+        const int a3 = A[i + 2];  // third element  (a3)
+        const int a4 = A[i + 3];  // fourth element (a4)
+
+        // NODE A.
+        if (a1 > B[j + c1 - 1]) {
+            j += c1;
+            continue;  
+        }
+        // NODE B.
+        if (a2 > B[j + c2 - 1]) {
+            auto pos = std::upper_bound(B.begin() + j, B.begin() + j + c2, a1);
+            B.insert(pos, a1);
+
+            i++;
+            j += c2;
+            continue;
+        }
+        // NODE C.
+        if (a3 > B[j + c3 - 1]) {
+            {
+                auto pos = std::upper_bound(B.begin() + j, B.begin() + j + c3, a1);
+                B.insert(pos, a1);
+            }
+            {
+                auto pos = std::upper_bound(B.begin() + j, B.begin() + j + c3, a2);
+                B.insert(pos, a2);
+            }
+
+            i += 2;
+            j += c3;
+            continue;
+        }
+        // NODE D.
+        if (a4 > B[j + c4 - 1]) {
+            {
+                auto pos = std::upper_bound(B.begin() + j, B.begin() + j + c4, a1);
+                B.insert(pos, a1);
+            }
+            {
+                auto pos = std::upper_bound(B.begin() + j + c1, B.begin() + j + c4, a2);
+                B.insert(pos, a2);
+            }
+            {
+                auto pos = std::upper_bound(B.begin() + j + c1, B.begin() + j + c4, a3);
+                B.insert(pos, a3);
+            }
+
+            i += 3;
+            j += c4;
+            continue;    
+        } 
+        // NODE E.
+        else {
+            for (int k = 0; k < 2; k++) {
+                auto pos = std::upper_bound(B.begin() + j, B.begin() + j + c2, A[i + k]);
+                B.insert(pos, A[i + k]);
+            }
+            for (int k = 2; k < 4; k++) {
+                auto pos = std::upper_bound(B.begin() + j + c2, B.begin() + j + c3, A[i + k]);
+                B.insert(pos, A[i + k]);
+            }
+            i += 4;   // All four processed.
+            j += c4;
+            n = static_cast<int>(B.size());
+            continue;
+        }
+    }
+
+    return B;
+}
+
 template <typename IterContainer>
 IterContainer hl_dynamic(IterContainer& A, IterContainer& B) {
     int m = static_cast<int>(A.size());
