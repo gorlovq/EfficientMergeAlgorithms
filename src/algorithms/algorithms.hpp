@@ -329,25 +329,22 @@ IterContainer hl_dynamic(IterContainer& A, IterContainer& B) {
         } 
         // NODE E.
         else {
-            {
-                auto pos = std::upper_bound(B.begin() + j, B.begin() + j + c4, a1);
-                B.insert(pos, a1);
-            }
-            {
-                auto pos = std::upper_bound(B.begin() + j, B.begin() + j + c4 + 1, a2);
-                B.insert(pos, a2);
-            }
-            {
-                auto pos = std::upper_bound(B.begin() + j, B.begin() + j + c4 + 2, a3);
-                B.insert(pos, a3);
-            }
-            {
-                auto pos = std::upper_bound(B.begin() + j, B.begin() + j + c4 + 3, a4);
-                B.insert(pos, a4);
-            }
+            auto pos = std::upper_bound(B.begin() + j, B.begin() + j + c4, a1);
+            B.insert(pos, a1);
+            
+            pos = std::upper_bound(B.begin() + j, B.begin() + j + c4 + 1, a2);    
+            B.insert(pos, a2);
+            
+            pos = std::upper_bound(B.begin() + j, B.begin() + j + c4 + 2, a3);
+            B.insert(pos, a3);
+            
+            pos = std::upper_bound(B.begin() + j, B.begin() + j + c4 + 3, a4);
+            B.insert(pos, a4);
 
-            i += 4;   // All four processed.
-            j += c4;
+            int annexed = static_cast<int>(std::distance(B.begin() + j, pos));
+
+            i += 4;
+            j += annexed;
             n = static_cast<int>(B.size());
             continue;
         }
