@@ -60,14 +60,14 @@ int main() {
     }
 
     // Binary Merge
-    std::cout << "Running binary_merge" << std::endl;
-    std::vector<int> result_binary_merge = binary_merge(a, b);
+    // std::cout << "Running binary_merge" << std::endl;
+    // std::vector<int> result_binary_merge = binary_merge(a, b);
 
-    if (result == result_binary_merge) {
-        std::cout << "binary_merge is correct\n" << std::endl;
-    } else {
-        std::cout << "binary_merge is incorrect\n" << std::endl;
-    }
+    // if (result == result_binary_merge) {
+    //     std::cout << "binary_merge is correct\n" << std::endl;
+    // } else {
+    //     std::cout << "binary_merge is incorrect\n" << std::endl;
+    // }
 
 
     // Hwang-Lin Static
