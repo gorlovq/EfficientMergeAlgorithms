@@ -356,4 +356,91 @@ IterContainer hl_dynamic(IterContainer& A, IterContainer& B) {
     return B;
 }
 
+// Fractile insertion (Minimean merging and sorting: An Algorithm, R. Michael Tanner)
+template <typename IterContainer>
+void fractile_insertion_alg(typename IterContainer::const_iterator a_begin, int m, IterContainer& b) {
+    // Step 1
+    int n = static_cast<int>(std::distance(b.begin(), b.end()));
+    int f = static_cast<int>(std::floor(static_cast<double>(m) / 2.0));
+    int k = static_cast<int>(std::floor(static_cast<double>(n) * (static_cast<double>(f)/(static_cast<double>(m) + 1.0))));
+    int alpha = static_cast<int>(std::floor((1.0/2.0) * std::log2(static_cast<double>(n) * ((1.0 + static_cast<double>(n))/static_cast<double>(m))) - 1.3));
+    int delta = std::pow(2, alpha);
+
+    // Step 2
+    if (*(a_begin + f) > *(b.begin() + k)) {
+        int prev_k;
+        do {
+            prev_k = k;
+            k += delta;
+        } while ((k < n) && (*(a_begin + f) >= *(b.begin() + k)));
+        if (k >= n) {
+            binary_insert(b, b.begin() + prev_k, b.begin() + n, *(a_begin + f));
+        } else {
+            binary_insert(b, b.begin() + prev_k, b.begin() + k, *(a_begin + f));
+        }
+
+        if (m > 2) {
+            fractile_insertion_alg(a_begin, f, b); // left part
+            fractile_insertion_alg(a_begin + f + 1, m - f - 1, b); // right part
+        } else if (m == 2) {
+            fractile_insertion_alg(a_begin, f, b); // left part
+        }
+        return;
+    }
+
+    // Step 3
+    if (*(a_begin + f) < *(b.begin() + k)) {
+        int prev_k;
+        do {
+            prev_k = k;
+            k -= delta;
+        } while ((k >= 0) && (*(a_begin + f) <= *(b.begin() + k)));
+        if (k < 0) {
+            binary_insert(b, b.begin(), b.begin() + prev_k, *(a_begin + f));
+        } else {
+            binary_insert(b, b.begin() + k, b.begin() + prev_k, *(a_begin + f));
+        }
+
+        if (m > 2) {
+            fractile_insertion_alg(a_begin, f, b); // left part
+            fractile_insertion_alg(a_begin + f + 1, m - f - 1, b); // right part
+        } else if (m == 2) {
+            fractile_insertion_alg(a_begin, f, b); // left part
+        }
+        return;
+    }
+
+    // Not considered in original paper case, when A[f] == B[k]
+    if (*(a_begin + f) == *(b.begin() + k)) {
+        b.insert(b.begin() + k, *(a_begin + f));
+
+        if (m > 2) {
+            fractile_insertion_alg(a_begin, f, b); // left part
+            fractile_insertion_alg(a_begin + f + 1, m - f - 1, b); // right part
+        } else if (m == 2) {
+            fractile_insertion_alg(a_begin, f, b); // left part
+        }
+        return;
+    }
+
+}
+
+template <typename IterContainer>
+IterContainer fractile_insertion(const IterContainer& a, const IterContainer& b) {
+    auto [m, n] = std::array<const int, 2>{{static_cast<int>(std::distance(a.begin(), a.end())), static_cast<int>(std::distance(b.begin(), b.end()))}};
+    IterContainer r; // Resulting vector
+    r.reserve(m + n);
+
+    if (m <= n) {
+        std::copy(b.begin(), b.end(), std::back_inserter(r)); // copy b to result
+        fractile_insertion_alg(a.begin(), m, r);
+    } else {
+        std::copy(a.begin(), a.end(), std::back_inserter(r)); // copy a to result
+        fractile_insertion_alg(b.begin(), n, r);
+    }
+
+    return r;
+}
+
+
 #endif // ALGORITHMS_H

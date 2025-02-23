@@ -49,6 +49,16 @@ int main() {
         std::cout << "hla is incorrect\n" << std::endl;
     }
 
+    // Fractile Insertion
+    std::cout << "Running fractile_insertion" << std::endl;
+    std::vector<int> result_fractile_insertion = fractile_insertion(a, b);
+
+    if (result == result_fractile_insertion) {
+        std::cout << "fractile_insertion is correct\n" << std::endl;
+    } else {
+        std::cout << "fractile_insertion is incorrect\n" << std::endl;
+    }
+
     // Binary Merge
     std::cout << "Running binary_merge" << std::endl;
     std::vector<int> result_binary_merge = binary_merge(a, b);
