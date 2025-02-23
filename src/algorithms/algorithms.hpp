@@ -240,7 +240,7 @@ IterContainer hl_static(IterContainer& a, IterContainer& b) {
 
 
 template <typename IterContainer>
-IterContainer hl_dynamic2(IterContainer& A, IterContainer& B) {
+IterContainer hl_dynamic(IterContainer& A, IterContainer& B) {
     int m = static_cast<int>(A.size());
     int n = static_cast<int>(B.size());
 
@@ -254,9 +254,8 @@ IterContainer hl_dynamic2(IterContainer& A, IterContainer& B) {
         int remainingA = m - i;
         int remainingB = n - j;
 
-        
         int d = (remainingB > remainingA) 
-            ? static_cast<int>(std::floor(std::log2(static_cast<double>(n - j) / (m - i)))) 
+            ? static_cast<int>(std::floor(std::log2(static_cast<double>(remainingB) / (remainingA)))) 
             : 0;
 
         int pow2d = pow2(d);
@@ -275,10 +274,10 @@ IterContainer hl_dynamic2(IterContainer& A, IterContainer& B) {
             break;
         }
 
-        const int a1 = A[i];      // first element (a1)
-        const int a2 = A[i + 1];  // second element (a2)
-        const int a3 = A[i + 2];  // third element  (a3)
-        const int a4 = A[i + 3];  // fourth element (a4)
+        const int a1 = A[i];  
+        const int a2 = A[i + 1];  
+        const int a3 = A[i + 2];  
+        const int a4 = A[i + 3];
 
         // NODE A.
         if (a1 > B[j + c1 - 1]) {
@@ -312,15 +311,15 @@ IterContainer hl_dynamic2(IterContainer& A, IterContainer& B) {
         // NODE D.
         if (a4 > B[j + c4 - 1]) {
             {
-                auto pos = std::upper_bound(B.begin() + j, B.begin() + j + c4, a1);
+                auto pos = std::upper_bound(B.begin() + j, B.begin() + j + c3, a1);
                 B.insert(pos, a1);
             }
             {
-                auto pos = std::upper_bound(B.begin() + j + c1, B.begin() + j + c4, a2);
+                auto pos = std::upper_bound(B.begin() + j, B.begin() + j + c3 + 1, a2);
                 B.insert(pos, a2);
             }
             {
-                auto pos = std::upper_bound(B.begin() + j + c1, B.begin() + j + c4, a3);
+                auto pos = std::upper_bound(B.begin() + j, B.begin() + j + c3 + 2, a3);
                 B.insert(pos, a3);
             }
 
@@ -330,132 +329,27 @@ IterContainer hl_dynamic2(IterContainer& A, IterContainer& B) {
         } 
         // NODE E.
         else {
-            for (int k = 0; k < 2; k++) {
-                auto pos = std::upper_bound(B.begin() + j, B.begin() + j + c2, A[i + k]);
-                B.insert(pos, A[i + k]);
+            {
+                auto pos = std::upper_bound(B.begin() + j, B.begin() + j + c4, a1);
+                B.insert(pos, a1);
             }
-            for (int k = 2; k < 4; k++) {
-                auto pos = std::upper_bound(B.begin() + j + c2, B.begin() + j + c3, A[i + k]);
-                B.insert(pos, A[i + k]);
+            {
+                auto pos = std::upper_bound(B.begin() + j, B.begin() + j + c4 + 1, a2);
+                B.insert(pos, a2);
             }
+            {
+                auto pos = std::upper_bound(B.begin() + j, B.begin() + j + c4 + 2, a3);
+                B.insert(pos, a3);
+            }
+            {
+                auto pos = std::upper_bound(B.begin() + j, B.begin() + j + c4 + 3, a4);
+                B.insert(pos, a4);
+            }
+
             i += 4;   // All four processed.
             j += c4;
             n = static_cast<int>(B.size());
             continue;
-        }
-    }
-
-    return B;
-}
-
-template <typename IterContainer>
-IterContainer hl_dynamic(IterContainer& A, IterContainer& B) {
-    int m = static_cast<int>(A.size());
-    int n = static_cast<int>(B.size());
-
-    B.reserve(n + m);
-
-    while (m > 0) {
-        // Step 1: Compute d
-        int d = (n > m && m > 0) 
-            ? static_cast<int>(std::floor(std::log2(static_cast<double>(n) / m))) 
-            : 0;
-
-        int pow2d = pow2(d);
-
-        int c1 = n - pow2d;
-        int c2 = n - ((17 * pow2d) / 14);
-        int c3 = n + 1 - ((12 * pow2d) / 7);
-        int c4 = n + 1 - ((41 * pow2d) / 28);
-
-        c1 = std::clamp(c1, 0, n - 1);
-        c2 = std::clamp(c2, 0, n - 1);
-        c3 = std::clamp(c3, 0, n - 1);
-        c4 = std::clamp(c4, 0, n - 1);
-
-        // Step 2: Compare A[m - 1] and B[c1]
-        if (m >= 1 && c1 >= 0 && c1 < n && A[m - 1] < B[c1]) {
-            n = c1;
-            continue; // Go to Step 1
-        } else if (m >= 2 && c2 >= 0 && c2 < n && A[m - 2] < B[c2]) {
-            // Step 3: Compare A[m - 2] and B[c2]
-            // Insert A[m - 1] into B[(c1 + 1):n]
-            int insert_index = c1 + 1;
-            if (insert_index >= B.size()) {
-                B.push_back(A[m - 1]);
-            } else {
-                auto insert_pos = std::upper_bound(B.begin() + insert_index, B.begin() + n, A[m - 1]);
-                B.insert(insert_pos, A[m - 1]);
-            }
-
-            n = c2; 
-            m -= 1;
-
-            continue; // Go to Step 1
-        } else if (m >= 3 && c3 >= 0 && c3 < n && A[m - 3] < B[c3]) {
-            // Step 4: Compare A[m - 3] and B[c3]
-            // Merge A[m - 3 : m - 1] with B[c2 + 1 : n - 1]
-            auto a_start = A.begin() + (m - 2);
-            auto a_end = A.begin() + m;
-            auto b_start = B.begin() + c2 + 1;
-            auto b_end = B.begin() + n;
-
-            // Ensure b_start is not beyond b_end
-            b_start = (b_start > b_end) ? b_end : b_start;
-
-            std::vector<typename IterContainer::value_type> temp;
-            temp.reserve((a_end - a_start) + (b_end - b_start));
-
-            std::merge(a_start, a_end, b_start, b_end, std::back_inserter(temp));
-
-            // Replace B[c2 + 1 : n - 1] with merged temp
-            B.erase(b_start, b_end);
-            B.insert(B.begin() + c2 + 1, temp.begin(), temp.end());
-
-            n = c3;
-            m -= 2;
-
-            continue; // Go to Step 1
-        } else if (m >= 4 && c4 >= 0 && c4 <= n) {
-            // Step 6: Merge A[m - 4 : m - 1] with B[c4 : n - 1]
-            auto q_it = std::upper_bound(B.begin() + c4, B.begin() + n, A[m - 3]);
-            int q = static_cast<int>(q_it - B.begin()) - 1;
-
-            if (q_it == B.begin() + n) {
-                // A[m - 4] is greater than all elements in B[c4:n - 1]
-                // Append remaining elements of A to B
-                B.insert(B.end(), A.begin() + m - 4, A.begin() + m);
-                n += 4; // Update n with the number of elements added
-                m -= 4;
-                continue; // Go to Step 1
-            } else {
-                auto a_start = A.begin() + (m - 4);
-                auto a_end = A.begin() + m;
-                auto b_start = B.begin() + c4;
-                auto b_end = B.begin() + n;
-
-                std::vector<typename IterContainer::value_type> temp;
-                temp.reserve((a_end - a_start) + (b_end - b_start));
-
-                std::merge(a_start, a_end, b_start, b_end, std::back_inserter(temp));
-
-                // Replace B[c4 : n - 1] with merged temp
-                B.erase(b_start, b_end);
-                B.insert(B.begin() + c4, temp.begin(), temp.end());
-
-                n = q + 1;
-                m -= 4;
-                continue; // Go to Step 1
-            }
-        } else {
-            // Handle remaining elements when m < 4
-            for (int i = m - 1; i >= 0; --i) {
-                auto insert_pos = std::upper_bound(B.begin(), B.begin() + n, A[i]);
-                B.insert(insert_pos, A[i]);
-                n += 1;
-            }
-            m = 0;
-            break;
         }
     }
 
