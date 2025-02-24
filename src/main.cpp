@@ -88,7 +88,7 @@ int main() {
     std::vector<int> a_copy_hl_2 = a;
     std::vector<int> b_copy_hl_2 = b;
 
-    std::vector<int> result_hl_dynamic = hl_dynamic(a, b);
+    std::vector<int> result_hl_dynamic = hl_dynamic(a_copy_hl_2, b_copy_hl_2);
 
     if (result == result_hl_dynamic) {
         std::cout << "hl_dynamic is correct\n" << std::endl;
