@@ -73,7 +73,7 @@ void binary_insertion(IterContainer& arr, const T& elem) {
 
 // Hwang-Lin Merging Algorithm (Art of Computer Programming Volume 3 Sorting & Searching)
 template <typename IterContainer>
-IterContainer hla(const IterContainer& a, const IterContainer& b) {
+IterContainer hwang_lin_knuth_merge(const IterContainer& a, const IterContainer& b) {
     auto [a_left, a_right, b_left, b_right] = std::array<typename IterContainer::const_iterator, 4>{{a.begin(), a.end(), b.begin(), b.end()}};
     IterContainer r(a.size() + b.size()); // Resulting vector
 
@@ -193,7 +193,7 @@ IterContainer binary_merge(const IterContainer& a, const IterContainer& b) {
 
 
 template <typename IterContainer>
-IterContainer hl_static(IterContainer& a, IterContainer& b) {
+IterContainer hwang_lin_static_merge(IterContainer& a, IterContainer& b) {
     int m = static_cast<int>(a.size());
     int n = static_cast<int>(b.size());
 
@@ -239,7 +239,7 @@ IterContainer hl_static(IterContainer& a, IterContainer& b) {
 }
 
 template <typename IterContainer>
-IterContainer hl_dynamic(IterContainer& A, IterContainer& B) {
+IterContainer hwang_lin_dynamic_merge(IterContainer& A, IterContainer& B) {
     int m = static_cast<int>(A.size());
     int n = static_cast<int>(B.size());
 
@@ -422,7 +422,7 @@ void fractile_insertion_alg(typename IterContainer::const_iterator a_begin, int 
 }
 
 template <typename IterContainer>
-IterContainer fractile_insertion(const IterContainer& a, const IterContainer& b) {
+IterContainer fractile_insertion_merge(const IterContainer& a, const IterContainer& b) {
     auto [m, n] = std::array<const int, 2>{{static_cast<int>(std::distance(a.begin(), a.end())), static_cast<int>(std::distance(b.begin(), b.end()))}};
     IterContainer r; // Resulting vector
     r.reserve(m + n);
