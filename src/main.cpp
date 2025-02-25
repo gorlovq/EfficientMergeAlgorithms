@@ -10,22 +10,22 @@
 
 
 int main() {
-    TwoWayMergeAlgorithm TwoWayMergeAlgorithm;
-    HwangLinDynamicMergeAlgorithm HwangLinDynamicMergeAlgorithm;
-    HwangLinKnuthMergeAlgorithm HwangLinKnuthMergeAlgorithm;
-    HwangLinStaticMergeAlgorithm HwangLinStaticMergeAlgorithm;  
-    FractialInsertionMergeAlgorithm FractialInsertionMergeAlgorithm;  
+    TwoWayMergeAlgorithm two_way_merge_algorithm;
+    HwangLinDynamicMergeAlgorithm hwang_lin_dynamic_merge_algorithm;
+    HwangLinKnuthMergeAlgorithm hwang_lin_knuth_merge_algorithm;
+    HwangLinStaticMergeAlgorithm hwang_lin_static_merg_algorithm;  
+    FractialInsertionMergeAlgorithm fractial_insertion_merge_algorithm;  
     // TODO add simple_binary_merge
 
     AlgorithmTester tester; 
 
-    MergeTestCase testCase = generate_sorted_vectors(100, 10000000, CornerCaseType::RANDOM);
+    MergeTestCase test_case = generate_sorted_vectors(100, 10000000, CornerCaseType::RANDOM);
 
-    tester.testAlgorithm(TwoWayMergeAlgorithm, testCase);
-    tester.testAlgorithm(HwangLinDynamicMergeAlgorithm, testCase);
-    tester.testAlgorithm(HwangLinKnuthMergeAlgorithm, testCase);
-    tester.testAlgorithm(HwangLinStaticMergeAlgorithm, testCase);
-    tester.testAlgorithm(FractialInsertionMergeAlgorithm, testCase);
+    tester.testAlgorithm(two_way_merge_algorithm, test_case);
+    tester.testAlgorithm(hwang_lin_dynamic_merge_algorithm, test_case);
+    tester.testAlgorithm(hwang_lin_knuth_merge_algorithm, test_case);
+    tester.testAlgorithm(hwang_lin_static_merg_algorithm, test_case);
+    tester.testAlgorithm(fractial_insertion_merge_algorithm, test_case);
 
     return 0;
 }

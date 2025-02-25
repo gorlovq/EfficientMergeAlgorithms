@@ -240,14 +240,14 @@ IterContainer hwang_lin_static_merge(IterContainer& a, IterContainer& b) {
 
 
 template <typename IterContainer>
-IterContainer hwang_lin_dynamic_merge(IterContainer& A, IterContainer& B) {
-    int m = static_cast<int>(A.size());
-    int n = static_cast<int>(B.size());
+IterContainer hwang_lin_dynamic_merge(IterContainer& a, IterContainer& b) {
+    int m = static_cast<int>(a.size());
+    int n = static_cast<int>(b.size());
 
     size_t i = 0;         // index into A
     size_t j = 0;         // index into B
 
-    B.reserve(n + m);
+    b.reserve(n + m);
     // A is smaller then B
 
     while (m - i > 0) {
@@ -267,41 +267,41 @@ IterContainer hwang_lin_dynamic_merge(IterContainer& A, IterContainer& B) {
 
         if (m - i < 4) {
             for (; i < m; i++) {
-                auto pos = std::upper_bound(B.begin() + j, B.end(), A[i]);
-                B.insert(pos, A[i]);
-                n = static_cast<int>(B.size());
+                auto pos = std::upper_bound(b.begin() + j, b.end(), a[i]);
+                b.insert(pos, a[i]);
+                n = static_cast<int>(b.size());
             }
             break;
         }
 
-        const int a1 = A[i];  
-        const int a2 = A[i + 1];  
-        const int a3 = A[i + 2];  
-        const int a4 = A[i + 3];
+        const int a1 = a[i];  
+        const int a2 = a[i + 1];  
+        const int a3 = a[i + 2];  
+        const int a4 = a[i + 3];
 
         // NODE A.
-        if (a1 > B[j + c1 - 1]) {
+        if (a1 > b[j + c1 - 1]) {
             j += c1;
             continue;  
         }
         // NODE B.
-        if (a2 > B[j + c2 - 1]) {
-            auto pos = std::upper_bound(B.begin() + j, B.begin() + j + c2, a1);
-            B.insert(pos, a1);
+        if (a2 > b[j + c2 - 1]) {
+            auto pos = std::upper_bound(b.begin() + j, b.begin() + j + c2, a1);
+            b.insert(pos, a1);
 
             i++;
             j += c2;
             continue;
         }
         // NODE C.
-        if (a3 > B[j + c3 - 1]) {
+        if (a3 > b[j + c3 - 1]) {
             {
-                auto pos = std::upper_bound(B.begin() + j, B.begin() + j + c3, a1);
-                B.insert(pos, a1);
+                auto pos = std::upper_bound(b.begin() + j, b.begin() + j + c3, a1);
+                b.insert(pos, a1);
             }
             {
-                auto pos = std::upper_bound(B.begin() + j, B.begin() + j + c3, a2);
-                B.insert(pos, a2);
+                auto pos = std::upper_bound(b.begin() + j, b.begin() + j + c3, a2);
+                b.insert(pos, a2);
             }
 
             i += 2;
@@ -309,18 +309,18 @@ IterContainer hwang_lin_dynamic_merge(IterContainer& A, IterContainer& B) {
             continue;
         }
         // NODE D.
-        if (a4 > B[j + c4 - 1]) {
+        if (a4 > b[j + c4 - 1]) {
             {
-                auto pos = std::upper_bound(B.begin() + j, B.begin() + j + c3, a1);
-                B.insert(pos, a1);
+                auto pos = std::upper_bound(b.begin() + j, b.begin() + j + c3, a1);
+                b.insert(pos, a1);
             }
             {
-                auto pos = std::upper_bound(B.begin() + j, B.begin() + j + c3 + 1, a2);
-                B.insert(pos, a2);
+                auto pos = std::upper_bound(b.begin() + j, b.begin() + j + c3 + 1, a2);
+                b.insert(pos, a2);
             }
             {
-                auto pos = std::upper_bound(B.begin() + j, B.begin() + j + c3 + 2, a3);
-                B.insert(pos, a3);
+                auto pos = std::upper_bound(b.begin() + j, b.begin() + j + c3 + 2, a3);
+                b.insert(pos, a3);
             }
 
             i += 3;
@@ -329,28 +329,28 @@ IterContainer hwang_lin_dynamic_merge(IterContainer& A, IterContainer& B) {
         } 
         // NODE E.
         else {
-            auto pos = std::upper_bound(B.begin() + j, B.begin() + j + c4, a1);
-            B.insert(pos, a1);
+            auto pos = std::upper_bound(b.begin() + j, b.begin() + j + c4, a1);
+            b.insert(pos, a1);
             
-            pos = std::upper_bound(B.begin() + j, B.begin() + j + c4 + 1, a2);    
-            B.insert(pos, a2);
+            pos = std::upper_bound(b.begin() + j, b.begin() + j + c4 + 1, a2);    
+            b.insert(pos, a2);
             
-            pos = std::upper_bound(B.begin() + j, B.begin() + j + c4 + 2, a3);
-            B.insert(pos, a3);
+            pos = std::upper_bound(b.begin() + j, b.begin() + j + c4 + 2, a3);
+            b.insert(pos, a3);
             
-            pos = std::upper_bound(B.begin() + j, B.begin() + j + c4 + 3, a4);
-            B.insert(pos, a4);
+            pos = std::upper_bound(b.begin() + j, b.begin() + j + c4 + 3, a4);
+            b.insert(pos, a4);
 
-            int annexed = static_cast<int>(std::distance(B.begin() + j, pos));
+            int annexed = static_cast<int>(std::distance(b.begin() + j, pos));
 
             i += 4;
             j += annexed;
-            n = static_cast<int>(B.size());
+            n = static_cast<int>(b.size());
             continue;
         }
     }
 
-    return B;
+    return b;
 }
 
 // Fractile insertion (Minimean merging and sorting: An Algorithm, R. Michael Tanner)
