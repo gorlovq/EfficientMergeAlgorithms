@@ -241,6 +241,11 @@ IterContainer hwang_lin_static_merge(IterContainer& a, IterContainer& b) {
 
 template <typename IterContainer>
 IterContainer hwang_lin_dynamic_merge(IterContainer& a, IterContainer& b) {
+    // if a bigger then b we should swap them.
+    if (a.size() > b.size()) {
+        return hwang_lin_dynamic_merge(b, a);
+    }
+
     int m = static_cast<int>(a.size());
     int n = static_cast<int>(b.size());
 
@@ -248,7 +253,6 @@ IterContainer hwang_lin_dynamic_merge(IterContainer& a, IterContainer& b) {
     size_t j = 0;         // index into B
 
     b.reserve(n + m);
-    // A is smaller then B
 
     while (m - i > 0) {
         int remainingA = m - i;
@@ -286,7 +290,7 @@ IterContainer hwang_lin_dynamic_merge(IterContainer& a, IterContainer& b) {
         }
         // NODE B.
         if (a2 > b[j + c2 - 1]) {
-            auto pos = std::upper_bound(b.begin() + j, b.begin() + j + c2, a1);
+            auto pos = std::upper_bound(b.begin() + j, b.begin() + j + c1, a1);
             b.insert(pos, a1);
 
             i++;
@@ -296,11 +300,11 @@ IterContainer hwang_lin_dynamic_merge(IterContainer& a, IterContainer& b) {
         // NODE C.
         if (a3 > b[j + c3 - 1]) {
             {
-                auto pos = std::upper_bound(b.begin() + j, b.begin() + j + c3, a1);
+                auto pos = std::upper_bound(b.begin() + j, b.begin() + j + c2, a1);
                 b.insert(pos, a1);
             }
             {
-                auto pos = std::upper_bound(b.begin() + j, b.begin() + j + c3, a2);
+                auto pos = std::upper_bound(b.begin() + j, b.begin() + j + c2 + 1, a2);
                 b.insert(pos, a2);
             }
 
