@@ -16,6 +16,34 @@ enum class CornerCaseType {
     BLOCK_INTERLEAVE_B_A    // result = {{K from b}, {L from a}, {K from b}, {L from a}...};  1<= K,L; K+L<=m+n
 };
 
+
+inline std::string toString(CornerCaseType caseType) {
+    switch(caseType) {
+        case CornerCaseType::RANDOM:
+            return "RANDOM";
+        case CornerCaseType::FIRST_ALL_SMALLER:
+            return "FIRST_ALL_SMALLER";
+        case CornerCaseType::FIRST_ALL_GREATER:
+            return "FIRST_ALL_GREATER";
+        case CornerCaseType::PARTIAL_OVERLAP:
+            return "PARTIAL_OVERLAP";
+        case CornerCaseType::ONE_ELEMENT_EACH:
+            return "ONE_ELEMENT_EACH";
+        case CornerCaseType::EQUAL_ARRAYS:
+            return "EQUAL_ARRAYS";
+        case CornerCaseType::DUPLICATES_IN_BOTH:
+            return "DUPLICATES_IN_BOTH";
+        case CornerCaseType::ONE_ARRAY_EMPTY:
+            return "ONE_ARRAY_EMPTY";
+        case CornerCaseType::BLOCK_INTERLEAVE_A_B:
+            return "BLOCK_INTERLEAVE_A_B";
+        case CornerCaseType::BLOCK_INTERLEAVE_B_A:
+            return "BLOCK_INTERLEAVE_B_A";
+        default:
+            return "UNKNOWN";
+    }
+}
+
 // Structure to hold the generated test case data.
 struct MergeTestCase {
     std::vector<int> a;
