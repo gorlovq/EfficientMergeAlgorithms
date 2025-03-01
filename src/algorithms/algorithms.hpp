@@ -194,18 +194,24 @@ IterContainer binary_merge(const IterContainer& a, const IterContainer& b) {
 
 template <typename IterContainer>
 IterContainer hwang_lin_static_merge(IterContainer& a, IterContainer& b) {
+    // if a bigger then b we should swap them.
+    if (a.size() > b.size()) {
+        return hwang_lin_static_merge(b, a);
+    }
+
     int m = static_cast<int>(a.size());
     int n = static_cast<int>(b.size());
 
     b.reserve(m + n);
 
-    while (m > 0) {
-        // Step 1: Calculate t
+    // Step 1: check m and for empty.
+    while (m != 0 && n != 0) {
+        // Step 2: Calculate t.
         int t = static_cast<int>(std::floor(std::log2(static_cast<double>(n) / m)));
 
         // t < 0 When n is Less Than m
         // t = 0 When n is Equal to m
-        if (n < pow2(t) || t <= 0) {
+        if (t <= 0) {
             // Step 6: Insert elements of A into B using binary insertion
             for (int i = 0; i < m; ++i) {
                 binary_insertion(b, a[i]);
@@ -214,24 +220,27 @@ IterContainer hwang_lin_static_merge(IterContainer& a, IterContainer& b) {
             break;
         }
 
-        // Step 3: Compare A[m-1] with B[n - 2^t]
-        int k = n - pow2(t);
 
-        if (a[m - 1] < b[k]) {
-            n = k;
+        int pow2t = pow2(t);
+
+        int k = n - pow2t;
+        if (k < 0) k = 0;
+
+        int a_m = a[m - 1];
+        
+        // Step 3: Compare A[m] with B[n - 2^t + 1]
+        if (a_m < b[k]) {
+            n -= pow2t;
             continue;
         }else {
-            // Step 5: Insert A[m-1] into B[k+1 to n]
-            int q_start = k + 1;
-            int q_end = n;
-            auto it = std::upper_bound(b.begin() + q_start, b.begin() + q_end, a[m - 1]);
-            int q = static_cast<int>(it - b.begin()) - 1;
+            // Step 5: Insert A[m] into B[n - 2^t + 2 : n]
+            auto pos = std::upper_bound(b.begin() + k + 1, b.begin() + n, a_m);
+            b.insert(pos, a_m);
 
-            // Insert A[m-1] into B at position q + 1
-            b.insert(b.begin() + q + 1, a[m - 1]);
+            int q = static_cast<int>(std::distance(b.begin(), pos));
 
             n = q;
-            m -=  1;
+            m--;
         }
     } 
 

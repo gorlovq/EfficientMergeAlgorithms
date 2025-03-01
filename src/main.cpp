@@ -10,22 +10,31 @@
 
 
 int main() {
-    TwoWayMergeAlgorithm two_way_merge_algorithm;
-    HwangLinDynamicMergeAlgorithm hwang_lin_dynamic_merge_algorithm;
-    HwangLinKnuthMergeAlgorithm hwang_lin_knuth_merge_algorithm;
-    HwangLinStaticMergeAlgorithm hwang_lin_static_merg_algorithm;  
-    FractialInsertionMergeAlgorithm fractial_insertion_merge_algorithm;  
-    // TODO add simple_binary_merge
-
     AlgorithmTester tester; 
+    tester.addScenario({10, 100, CornerCaseType::RANDOM, 0, 100, 10, 10, 5});
+    tester.addScenario({249, 200000, CornerCaseType::RANDOM, 0, 300000, 10, 10, 5});
+    tester.addScenario({4440, 70000, CornerCaseType::FIRST_ALL_SMALLER, 0, 99000, 10, 10, 5});
+    tester.addScenario({2300, 100000, CornerCaseType::PARTIAL_OVERLAP, 0, 999999, 10, 10, 5});
+    tester.addScenario({1000, 22000, CornerCaseType::DUPLICATES_IN_BOTH, 0, 100, 10, 10, 3});
+    
 
-    MergeTestCase test_case = generate_sorted_vectors(100, 10000000, CornerCaseType::RANDOM);
-
-    tester.testAlgorithm(two_way_merge_algorithm, test_case);
-    tester.testAlgorithm(hwang_lin_dynamic_merge_algorithm, test_case);
-    tester.testAlgorithm(hwang_lin_knuth_merge_algorithm, test_case);
-    tester.testAlgorithm(hwang_lin_static_merg_algorithm, test_case);
-    tester.testAlgorithm(fractial_insertion_merge_algorithm, test_case);
+    std::vector<std::unique_ptr<MergeAlgorithm>> algorithms;
+    algorithms.push_back(std::make_unique<TwoWayMergeAlgorithm>());
+    algorithms.push_back(std::make_unique<HwangLinDynamicMergeAlgorithm>());
+    algorithms.push_back(std::make_unique<HwangLinKnuthMergeAlgorithm>());
+    algorithms.push_back(std::make_unique<HwangLinStaticMergeAlgorithm>());
+    algorithms.push_back(std::make_unique<FractialInsertionMergeAlgorithm>());
+    
+    // Iterate over each algorithm and run the tests.
+    for (auto& alg : algorithms) {
+        std::cout << "================================================================================" << std::endl;
+        std::cout << "Testing algorithm: " << alg->getName() << std::endl;
+        std::cout << "================================================================================" << std::endl;
+        
+        auto results = tester.runTests(*alg);
+        std::string report = tester.generateReport(results);
+        std::cout << report << std::endl;
+    }
 
     return 0;
 }
