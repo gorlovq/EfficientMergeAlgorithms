@@ -191,7 +191,30 @@ IterContainer binary_merge(const IterContainer& a, const IterContainer& b) {
     return r;
 }
 
-
+/*
+ * Algorithm: Hwang-Lin Static Merge
+ *
+ * Publication:
+ *   Thanh M., The Design and Analysis of Algorithms For Sort and Merge using Compressions 
+ *   // Master’s Thesis. – Concordia University, Montreal, Canada. – 1983. – c.39-43.
+ *
+ * Implementation:
+ *   Developer: Sergei Gorlov
+ *
+ * Parameters:
+ *   IterContainer& a - container with a sorted sequence of smaller size.
+ *                      Elements must be in ascending order.
+ *   IterContainer& b - container with a sorted sequence of larger size.
+ *                      Elements must be in ascending order.
+ *
+ * Return Value:
+ *   IterContainer - merged container containing all elements from a and b, sorted in ascending order.
+ *
+ * Notes:
+ *   - Containers must support the methods size(), reserve(), begin(), end(), insert().
+ *   - It is assumed that the containers a and b are already sorted before calling the function.
+ * 
+ */
 template <typename IterContainer>
 IterContainer hwang_lin_static_merge(IterContainer& a, IterContainer& b) {
     // if a bigger then b we should swap them.
