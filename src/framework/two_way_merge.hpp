@@ -1,6 +1,7 @@
 #ifndef TWO_WAY_MERGE_HPP
 #define TWO_WAY_MERGE_HPP
 
+#include <string>
 #include "merge_algorithm.hpp"
 #include "../algorithms/algorithms.hpp"
 
