@@ -209,19 +209,11 @@ IterContainer hwang_lin_static_merge(IterContainer& a, IterContainer& b) {
         // Step 2: Calculate t.
         int t = static_cast<int>(std::floor(std::log2(static_cast<double>(n) / m)));
 
-        // t < 0 When n is Less Than m
-        // t = 0 When n is Equal to m
-        if (t <= 0) {
-            // Step 6: Insert elements of A into B using binary insertion
-            for (int i = 0; i < m; ++i) {
-                binary_insertion(b, a[i]);
-                ++n;
-            }
+        int pow2t = pow2(t);
+
+        if (n < pow2t) {
             break;
         }
-
-
-        int pow2t = pow2(t);
 
         int k = n - pow2t;
         if (k < 0) k = 0;
@@ -243,6 +235,12 @@ IterContainer hwang_lin_static_merge(IterContainer& a, IterContainer& b) {
             m--;
         }
     } 
+
+
+    // Step 6: Insert elements of A into B using binary insertion
+    for (int i = 0; i < m; ++i) {
+        binary_insertion(b, a[i]);
+    }
 
     return b;
 }
