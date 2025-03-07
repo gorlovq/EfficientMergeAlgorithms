@@ -204,10 +204,11 @@ IterContainer hwang_lin_static_merge(IterContainer& a, IterContainer& b) {
 
     b.reserve(m + n);
 
+    int t = static_cast<int>(std::floor(std::log2(static_cast<double>(n) / m)));
+
     // Step 1: check m and for empty.
     while (m != 0 && n != 0) {
         // Step 2: Calculate t.
-        int t = static_cast<int>(std::floor(std::log2(static_cast<double>(n) / m)));
 
         int pow2t = pow2(t);
 
