@@ -1,7 +1,6 @@
 #ifndef HWANG_LIN_STATIC_MERGE_HPP
 #define HWANG_LIN_STATIC_MERGE_HPP
 
-#include <string>
 #include "merge_algorithm.hpp"
 #include "../algorithms/algorithms.hpp"
 
