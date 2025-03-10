@@ -1,6 +1,7 @@
 #ifndef FRACTIAL_INSERTION_MERGE_HPP
 #define FRACTIAL_INSERTION_MERGE_HPP
 
+#include <string>
 #include "merge_algorithm.hpp"
 #include "../algorithms/algorithms.hpp"
 

@@ -2,6 +2,7 @@
 #define FRAMEWORK_H
 
 #include <vector>
+#include <string>
 
 enum class CornerCaseType {
     RANDOM,                 // Completely random
