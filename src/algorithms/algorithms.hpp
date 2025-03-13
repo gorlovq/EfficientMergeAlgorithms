@@ -36,7 +36,8 @@
  *   - Containers must support the methods size(), begin(), end().
  *   - It is assumed that the containers a and b are already sorted before calling the function.
  * 
- */template <typename IterContainer>
+ */
+template <typename IterContainer>
 IterContainer two_way_merge(const IterContainer& a, const IterContainer& b) {
     auto [a_left, a_right, b_left, b_right] = std::array<typename IterContainer::const_iterator, 4>{{a.begin(), a.end(), b.begin(), b.end()}};
     IterContainer r(a.size() + b.size()); // Resulting vector
@@ -96,7 +97,33 @@ void binary_insertion(IterContainer& arr, const T& elem) {
     arr.insert(l, elem);
 }
 
-// Hwang-Lin Merging Algorithm (Art of Computer Programming Volume 3 Sorting & Searching)
+/*
+ * Algorithm: Hwang-Lin Merge (Knuth)
+ *
+ * Publication:
+ *   Knuth, D. E. Art of Computer Programming Volume 3: Sorting & Searching / 
+ *   D. E. Knuth. — 2nd ed. — Boston: Addison-Wesley, 1998. — c.203-204 — ISBN 0-201-89685-0.
+ *
+ * Implementation:
+ *   Developer: Igor Stikentzin
+ *
+ * Parameters:
+ *   IterContainer& a - container with a sorted sequence of smaller size.
+ *                      Elements must be in ascending order.
+ *                      IMPORTANT: The container must be accessed starting from its beginning.
+ * 
+ *   IterContainer& b - container with a sorted sequence of larger size.
+ *                      Elements must be in ascending order.
+ *                      IMPORTANT: The container must be accessed starting from its beginning.
+ *
+ * Return Value:
+ *   IterContainer - merged container containing all elements from a and b, sorted in ascending order.
+ *
+ * Notes:
+ *   - Containers must support the methods size(), begin(), end().
+ *   - It is assumed that the containers a and b are already sorted before calling the function.
+ * 
+ */
 template <typename IterContainer>
 IterContainer hwang_lin_knuth_merge(const IterContainer& a, const IterContainer& b) {
     auto [a_left, a_right, b_left, b_right] = std::array<typename IterContainer::const_iterator, 4>{{a.begin(), a.end(), b.begin(), b.end()}};
@@ -512,6 +539,33 @@ void fractile_insertion_alg(typename IterContainer::const_iterator a_begin, int 
 
 }
 
+/*
+ * Algorithm: Hwang-Lin Merge (Knuth)
+ *
+ * Publication:
+ *   Tanner, R. M. Minimean Merging and Sorting: An Algorithm / R. M. Tanner // 
+ *   SIAM Journal on Computing. — 1978. — Vol. 7, No. 1. — с.1–36 — DOI: 10.1137/0207002.
+ *   
+ * Implementation:
+ *   Developer: Igor Stikentzin
+ *
+ * Parameters:
+ *   IterContainer& a - container with a sorted sequence of smaller size.
+ *                      Elements must be in ascending order.
+ *                      IMPORTANT: The container must be accessed starting from its beginning.
+ * 
+ *   IterContainer& b - container with a sorted sequence of larger size.
+ *                      Elements must be in ascending order.
+ *                      IMPORTANT: The container must be accessed starting from its beginning.
+ *
+ * Return Value:
+ *   IterContainer - merged container containing all elements from a and b, sorted in ascending order.
+ *
+ * Notes:
+ *   - Containers must support the methods size(), reserve(), begin(), end(), insert().
+ *   - It is assumed that the containers a and b are already sorted before calling the function.
+ * 
+ */
 template <typename IterContainer>
 IterContainer fractile_insertion_merge(const IterContainer& a, const IterContainer& b) {
     auto [m, n] = std::array<const int, 2>{{static_cast<int>(std::distance(a.begin(), a.end())), static_cast<int>(std::distance(b.begin(), b.end()))}};
