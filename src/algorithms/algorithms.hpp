@@ -540,7 +540,7 @@ void fractile_insertion_alg(typename IterContainer::const_iterator a_begin, int 
 }
 
 /*
- * Algorithm: Hwang-Lin Merge (Knuth)
+ * Algorithm: Fractile insertion
  *
  * Publication:
  *   Tanner, R. M. Minimean Merging and Sorting: An Algorithm / R. M. Tanner // 
