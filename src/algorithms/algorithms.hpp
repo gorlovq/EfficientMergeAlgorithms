@@ -326,7 +326,7 @@ IterContainer hwang_lin_static_merge(IterContainer& a, IterContainer& b) {
 
 
 /*
- * Algorithm: Hwang-Lin Static Merge
+ * Algorithm: Hwang-Lin Dynamic Merge
  *
  * Publication:
  *   Thanh M. and Bui T. D., An Improvement of The Binary Merge Algorithm 
