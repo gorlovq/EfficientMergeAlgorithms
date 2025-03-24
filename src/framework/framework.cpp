@@ -3,7 +3,6 @@
 #include <ctime>
 #include <cstdlib>
 #include <vector>
-#include <iostream>
 
 inline int rand_in_range(int minVal, int maxVal) {
     return minVal + std::rand() % (maxVal - minVal + 1);

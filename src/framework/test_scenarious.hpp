@@ -5,7 +5,7 @@
 #include <vector>
 #include "framework.hpp"  // Для CornerCaseType и MergeTestCase
 
-// Структура описания одного тестового сценария
+// Structure for describing a single test scenario
 struct TestScenario {
     int sizeA;
     int sizeB;
@@ -14,14 +14,14 @@ struct TestScenario {
     int randomMax;
     int blockSizeA;
     int blockSizeB;
-    int iterations;  
+    int iterations;
 };
 
-// Структура для хранения результатов одного тестового сценария
+// Structure for storing the results of one test scenario
 struct TestScenarioResult {
     TestScenario scenario;
-    double averageTime;   // Среднее время выполнения (в мс)
-    bool allCorrect;      // Все итерации дали корректный результат?
+    double averageTime;   // Average execution time (in ms)
+    bool allCorrect;      // Flag indicating if all iterations matched the expected results
 };
 
 #endif // TEST_CONFIG_HPP
