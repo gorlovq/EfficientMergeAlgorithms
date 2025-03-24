@@ -1,0 +1,5 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     '/Users/gxrlxv/university/thesis/EfficientMergeAlgorithms/src/main'
+relocations:     []
+...
