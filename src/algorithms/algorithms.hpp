@@ -14,7 +14,7 @@
  * Algorithm: Hwang-Lin Static Merge
  *
  * Publication:
- *   Thanh M., The Design and Analysis of Algorithms For Sort and Merge using Compressions 
+ *   Thanh M., The Design and Analysis of Algorithms For Sort and Merge using Compressions
  *   // Master’s Thesis. – Concordia University, Montreal, Canada. – 1983. – c.35-38.
  *
  * Implementation:
@@ -24,7 +24,7 @@
  *   IterContainer& a - container with a sorted sequence of smaller size.
  *                      Elements must be in ascending order.
  *                      IMPORTANT: The container must be accessed starting from its beginning.
- * 
+ *
  *   IterContainer& b - container with a sorted sequence of larger size.
  *                      Elements must be in ascending order.
  *                      IMPORTANT: The container must be accessed starting from its beginning.
@@ -35,7 +35,7 @@
  * Notes:
  *   - Containers must support the methods size(), begin(), end().
  *   - It is assumed that the containers a and b are already sorted before calling the function.
- * 
+ *
  */
 template <typename IterContainer>
 IterContainer two_way_merge(const IterContainer& a, const IterContainer& b) {
@@ -101,7 +101,7 @@ void binary_insertion(IterContainer& arr, const T& elem) {
  * Algorithm: Hwang-Lin Merge (Knuth)
  *
  * Publication:
- *   Knuth, D. E. Art of Computer Programming Volume 3: Sorting & Searching / 
+ *   Knuth, D. E. Art of Computer Programming Volume 3: Sorting & Searching /
  *   D. E. Knuth. — 2nd ed. — Boston: Addison-Wesley, 1998. — c.203-204 — ISBN 0-201-89685-0.
  *
  * Implementation:
@@ -111,7 +111,7 @@ void binary_insertion(IterContainer& arr, const T& elem) {
  *   IterContainer& a - container with a sorted sequence of smaller size.
  *                      Elements must be in ascending order.
  *                      IMPORTANT: The container must be accessed starting from its beginning.
- * 
+ *
  *   IterContainer& b - container with a sorted sequence of larger size.
  *                      Elements must be in ascending order.
  *                      IMPORTANT: The container must be accessed starting from its beginning.
@@ -122,7 +122,7 @@ void binary_insertion(IterContainer& arr, const T& elem) {
  * Notes:
  *   - Containers must support the methods size(), begin(), end().
  *   - It is assumed that the containers a and b are already sorted before calling the function.
- * 
+ *
  */
 template <typename IterContainer>
 IterContainer hwang_lin_knuth_merge(const IterContainer& a, const IterContainer& b) {
@@ -176,13 +176,13 @@ IterContainer hwang_lin_knuth_merge(const IterContainer& a, const IterContainer&
             continue;
         }
     }
-    
+
     if (a_left == a_right) {
         std::copy(b_left, b_right, r.begin());
     } else {
         std::copy(a_left, a_right, r.begin());
     }
-    
+
     return r;
 }
 
@@ -190,18 +190,18 @@ IterContainer hwang_lin_knuth_merge(const IterContainer& a, const IterContainer&
 template <typename IterContainer>
 IterContainer binary_merge(const IterContainer& a, const IterContainer& b) {
     IterContainer r(a.size() + b.size());
-    
+
     auto a_begin = a.begin();
     auto b_begin = b.begin();
     auto r_begin = r.begin();
-    
+
     // Определение вложенной функции binary_merge_recursive
-    std::function<void(typename IterContainer::const_iterator&, 
+    std::function<void(typename IterContainer::const_iterator&,
                        typename IterContainer::const_iterator&,
                        typename IterContainer::iterator&,
                        size_t, size_t)> binary_merge_recursive;
-    
-    binary_merge_recursive = [&](typename IterContainer::const_iterator& a_it, 
+
+    binary_merge_recursive = [&](typename IterContainer::const_iterator& a_it,
                                  typename IterContainer::const_iterator& b_it,
                                  typename IterContainer::iterator& r_it,
                                  size_t an, size_t bn) {
@@ -219,12 +219,12 @@ IterContainer binary_merge(const IterContainer& a, const IterContainer& b) {
             // neither a nor b are 0
             size_t am = an / 2;
             auto a_mid = a_it + am;
-         
+
             auto b_mid = std::lower_bound(b_it, b_it + bn, *a_mid);
             size_t bm = std::distance(b_it, b_mid);
-            
+
             binary_merge_recursive(a_it, b_it, r_it, am, bm);
-            
+
             if (b_mid != b_it + bn && *b_mid == *a_mid) {
                 // same elements
                 *r_it++ = *a_mid++;
@@ -237,7 +237,7 @@ IterContainer binary_merge(const IterContainer& a, const IterContainer& b) {
             }
         }
     };
-    
+
     binary_merge_recursive(a_begin, b_begin, r_begin, a.size(), b.size());
 
     return r;
@@ -247,7 +247,7 @@ IterContainer binary_merge(const IterContainer& a, const IterContainer& b) {
  * Algorithm: Hwang-Lin Static Merge
  *
  * Publication:
- *   Thanh M., The Design and Analysis of Algorithms For Sort and Merge using Compressions 
+ *   Thanh M., The Design and Analysis of Algorithms For Sort and Merge using Compressions
  *   // Master’s Thesis. – Concordia University, Montreal, Canada. – 1983. – c.39-43.
  *
  * Implementation:
@@ -257,7 +257,7 @@ IterContainer binary_merge(const IterContainer& a, const IterContainer& b) {
  *   IterContainer& a - container with a sorted sequence of smaller size.
  *                      Elements must be in ascending order.
  *                      IMPORTANT: The container must be accessed starting from its beginning.
- * 
+ *
  *   IterContainer& b - container with a sorted sequence of larger size.
  *                      Elements must be in ascending order.
  *                      IMPORTANT: The container must be accessed starting from its beginning.
@@ -268,15 +268,10 @@ IterContainer binary_merge(const IterContainer& a, const IterContainer& b) {
  * Notes:
  *   - Containers must support the methods size(), reserve(), begin(), end(), insert().
  *   - It is assumed that the containers a and b are already sorted before calling the function.
- * 
+ *
  */
 template <typename IterContainer>
 IterContainer hwang_lin_static_merge(IterContainer& a, IterContainer& b) {
-    // if a bigger then b we should swap them.
-    if (a.size() > b.size()) {
-        return hwang_lin_static_merge(b, a);
-    }
-
     int m = static_cast<int>(a.size());
     int n = static_cast<int>(b.size());
 
@@ -298,7 +293,7 @@ IterContainer hwang_lin_static_merge(IterContainer& a, IterContainer& b) {
         if (k < 0) k = 0;
 
         int a_m = a[m - 1];
-        
+
         // Step 3: Compare A[m] with B[n - 2^t + 1]
         if (a_m < b[k]) {
             n -= pow2t;
@@ -313,7 +308,7 @@ IterContainer hwang_lin_static_merge(IterContainer& a, IterContainer& b) {
             n = q;
             m--;
         }
-    } 
+    }
 
 
     // Step 6: Insert elements of A into B using binary insertion
@@ -329,7 +324,7 @@ IterContainer hwang_lin_static_merge(IterContainer& a, IterContainer& b) {
  * Algorithm: Hwang-Lin Dynamic Merge
  *
  * Publication:
- *   Thanh M. and Bui T. D., An Improvement of The Binary Merge Algorithm 
+ *   Thanh M. and Bui T. D., An Improvement of The Binary Merge Algorithm
  *   // Concordia University, Montreal, Canada. – 1982. – с.455-462
  *
  * Implementation:
@@ -339,7 +334,7 @@ IterContainer hwang_lin_static_merge(IterContainer& a, IterContainer& b) {
  *   IterContainer& a - container with a sorted sequence of smaller size.
  *                      Elements must be in ascending order.
  *                      IMPORTANT: The container must be accessed starting from its beginning.
- * 
+ *
  *   IterContainer& b - container with a sorted sequence of larger size.
  *                      Elements must be in ascending order.
  *                      IMPORTANT: The container must be accessed starting from its beginning.
@@ -350,15 +345,10 @@ IterContainer hwang_lin_static_merge(IterContainer& a, IterContainer& b) {
  * Notes:
  *   - Containers must support the methods size(), reserve(), begin(), end(), insert().
  *   - It is assumed that the containers a and b are already sorted before calling the function.
- * 
+ *
  */
 template <typename IterContainer>
 IterContainer hwang_lin_dynamic_merge(IterContainer& a, IterContainer& b) {
-    // if a bigger then b we should swap them.
-    if (a.size() > b.size()) {
-        return hwang_lin_dynamic_merge(b, a);
-    }
-
     int m = static_cast<int>(a.size());
     int n = static_cast<int>(b.size());
 
@@ -371,8 +361,8 @@ IterContainer hwang_lin_dynamic_merge(IterContainer& a, IterContainer& b) {
         int remainingA = m - i;
         int remainingB = n - j;
 
-        int d = (remainingB > remainingA) 
-            ? static_cast<int>(std::floor(std::log2(static_cast<double>(remainingB) / (remainingA)))) 
+        int d = (remainingB > remainingA)
+            ? static_cast<int>(std::floor(std::log2(static_cast<double>(remainingB) / (remainingA))))
             : 0;
 
         int pow2d = pow2(d);
@@ -391,15 +381,15 @@ IterContainer hwang_lin_dynamic_merge(IterContainer& a, IterContainer& b) {
             break;
         }
 
-        const int a1 = a[i];  
-        const int a2 = a[i + 1];  
-        const int a3 = a[i + 2];  
+        const int a1 = a[i];
+        const int a2 = a[i + 1];
+        const int a3 = a[i + 2];
         const int a4 = a[i + 3];
 
         // NODE A.
         if (a1 > b[j + c1 - 1]) {
             j += c1;
-            continue;  
+            continue;
         }
         // NODE B.
         if (a2 > b[j + c2 - 1]) {
@@ -442,19 +432,19 @@ IterContainer hwang_lin_dynamic_merge(IterContainer& a, IterContainer& b) {
 
             i += 3;
             j += c4;
-            continue;    
-        } 
+            continue;
+        }
         // NODE E.
         else {
             auto pos = std::upper_bound(b.begin() + j, b.begin() + j + c4, a1);
             b.insert(pos, a1);
-            
-            pos = std::upper_bound(b.begin() + j, b.begin() + j + c4 + 1, a2);    
+
+            pos = std::upper_bound(b.begin() + j, b.begin() + j + c4 + 1, a2);
             b.insert(pos, a2);
-            
+
             pos = std::upper_bound(b.begin() + j, b.begin() + j + c4 + 2, a3);
             b.insert(pos, a3);
-            
+
             pos = std::upper_bound(b.begin() + j, b.begin() + j + c4 + 3, a4);
             b.insert(pos, a4);
 
@@ -543,9 +533,9 @@ void fractile_insertion_alg(typename IterContainer::const_iterator a_begin, int 
  * Algorithm: Fractile insertion
  *
  * Publication:
- *   Tanner, R. M. Minimean Merging and Sorting: An Algorithm / R. M. Tanner // 
+ *   Tanner, R. M. Minimean Merging and Sorting: An Algorithm / R. M. Tanner //
  *   SIAM Journal on Computing. — 1978. — Vol. 7, No. 1. — с.1–36 — DOI: 10.1137/0207002.
- *   
+ *
  * Implementation:
  *   Developer: Igor Stikentzin
  *
@@ -553,7 +543,7 @@ void fractile_insertion_alg(typename IterContainer::const_iterator a_begin, int 
  *   IterContainer& a - container with a sorted sequence of smaller size.
  *                      Elements must be in ascending order.
  *                      IMPORTANT: The container must be accessed starting from its beginning.
- * 
+ *
  *   IterContainer& b - container with a sorted sequence of larger size.
  *                      Elements must be in ascending order.
  *                      IMPORTANT: The container must be accessed starting from its beginning.
@@ -564,7 +554,7 @@ void fractile_insertion_alg(typename IterContainer::const_iterator a_begin, int 
  * Notes:
  *   - Containers must support the methods size(), reserve(), begin(), end(), insert().
  *   - It is assumed that the containers a and b are already sorted before calling the function.
- * 
+ *
  */
 template <typename IterContainer>
 IterContainer fractile_insertion_merge(const IterContainer& a, const IterContainer& b) {
