@@ -4,4 +4,4 @@ build/
 *.exe
 *.o
 build/
-
+.cache/
