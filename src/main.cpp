@@ -26,11 +26,13 @@ int main() {
     algorithms.push_back(std::make_unique<HwangLinStaticMergeAlgorithm>());
     algorithms.push_back(std::make_unique<FractialInsertionMergeAlgorithm>());
 
+    const std::string separator(REPORT_WIDTH, '=');
+
     // Iterate over each algorithm and run the tests.
     for (auto& alg : algorithms) {
-        std::cout << "================================================================================" << std::endl;
+        std::cout << separator << std::endl;
         std::cout << "Testing algorithm: " << alg->getName() << std::endl;
-        std::cout << "================================================================================" << std::endl;
+        std::cout << separator << std::endl;
 
         auto results = tester.runTests(*alg);
         std::string report = tester.generateReport(results);
