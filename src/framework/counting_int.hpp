@@ -9,7 +9,6 @@ public:
 
     CountingInt(int v = 0) : value(v) {}
 
-    // Reset the counter.
     static void resetCounter() {
         comparisons = 0;
     }
@@ -21,7 +20,6 @@ inline bool operator<(const CountingInt& lhs, const CountingInt& rhs) {
     return lhs.value < rhs.value;
 }
 
-// Define the remaining operators in terms of operator<.
 inline bool operator==(const CountingInt& lhs, const CountingInt& rhs) {
     return !(lhs < rhs) && !(rhs < lhs);
 }
