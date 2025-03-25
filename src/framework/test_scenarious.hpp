@@ -2,7 +2,7 @@
 #ifndef TEST_CONFIG_HPP
 #define TEST_CONFIG_HPP
 
-#include "framework.hpp"  // Для CornerCaseType и MergeTestCase
+#include "generate_sorted_vectors.hpp"
 
 // Structure for describing a single test scenario
 struct TestScenario {

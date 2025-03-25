@@ -2,7 +2,7 @@
 #define ALGORITHM_TESTER_HPP
 
 #include "merge_algorithm.hpp"
-#include "framework.hpp"
+#include "generate_sorted_vectors.hpp"
 #include "test_scenarious.hpp"
 #include "counting_int.hpp"
 #include <chrono>
