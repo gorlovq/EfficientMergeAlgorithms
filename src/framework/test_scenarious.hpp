@@ -18,10 +18,10 @@ struct TestScenario {
 
 // Structure for storing the results of one test scenario
 struct TestScenarioResult {
-    TestScenario scenario;
-    double averageTime;   // Average execution time (in ms)
-    long long averageCompressions;
-    bool allCorrect;      // Flag indicating if all iterations matched the expected results
+    TestScenario scenario;           // The test scenario configuration
+    double averageTime;              // Average execution time (in ms)
+    long long averageCompressions;   // Average number of compression operations
+    bool allCorrect;                 // Flag indicating if all iterations matched the expected results
 };
 
 #endif // TEST_CONFIG_HPP
