@@ -1,3 +1,5 @@
+#include <iostream>
+
 auto pow2 = [](int n) -> int {return 1 << n;}; // Raise a number to the power of 2 using a bitwise operator
 
 // Insert element in contaiiner in specified range
