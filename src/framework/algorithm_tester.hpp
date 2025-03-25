@@ -2,8 +2,9 @@
 #define ALGORITHM_TESTER_HPP
 
 #include "merge_algorithm.hpp"
-#include "framework.hpp" 
+#include "framework.hpp"
 #include "test_scenarious.hpp"
+#include "counting_int.hpp"
 #include <chrono>
 #include <iostream>
 #include <sstream>
@@ -19,37 +20,43 @@ public:
 
     std::vector<TestScenarioResult> runTests(MergeAlgorithm& algorithm) {
         std::vector<TestScenarioResult> results;
-    
+
         for (const auto& scenario : scenarios_) {
-            std::cout << "Running scenario: A = " << scenario.sizeA 
-                      << ", B = " << scenario.sizeB 
-                      << ", Case = " << static_cast<int>(scenario.caseType) << std::endl;
-        
+            std::cout << "Running scenario: A = " << scenario.sizeA
+                      << ", B = " << scenario.sizeB
+                      << ", Case = " << toString(scenario.caseType) << std::endl;
+
             double total_time = 0.0;
+            long long total_comparisons = 0; // Sum comparisons over iterations.
             bool is_correct = true;
-        
+
             for (int i = 0; i < scenario.iterations; i++) {
+                CountingInt::resetCounter();
+
                 MergeTestCase test_case = generate_sorted_vectors(
                     scenario.sizeA, scenario.sizeB, scenario.caseType,
                     scenario.randomMin, scenario.randomMax,
                     scenario.blockSizeA, scenario.blockSizeB
                 );
-            
+
                 auto start = std::chrono::high_resolution_clock::now();
                 auto result = algorithm.merge(test_case.a, test_case.b);
                 auto end = std::chrono::high_resolution_clock::now();
                 double elapsed = std::chrono::duration<double, std::milli>(end - start).count();
-            
+
                 total_time += elapsed;
+                total_comparisons += CountingInt::comparisons; // Record comparisons for this iteration.
+
                 if (result != test_case.result) {
                     is_correct = false;
                 }
             }
-        
+
             double avg_time = total_time / scenario.iterations;
-            results.push_back({scenario, avg_time, is_correct});
+            long long avg_comparisons = total_comparisons / scenario.iterations;
+            results.push_back({scenario, avg_time, avg_comparisons, is_correct});
         }
-    
+
         return results;
     }
 
@@ -66,11 +73,12 @@ public:
         const int colWidthCase     = 22; // for longer strings like "FIRST_ALL_SMALLER"
         const int colWidthIter     = 10;
         const int colWidthTime     = 12;
+        const int colWidthComp     = 20; // New column for average comparisons.
         const int colWidthResult   = 10;
 
         // Print header
         oss << "Test Report:\n"
-            << std::string(80, '-') << "\n";
+            << std::string(100, '-') << "\n";
 
         // Use std::left to left-align the columns (or std::right for right-alignment).
         oss << std::left
@@ -80,10 +88,11 @@ public:
             << std::setw(colWidthCase)     << "Case"
             << std::setw(colWidthIter)     << "Iter"
             << std::setw(colWidthTime)     << "AvgTime(ms)"
+            << std::setw(colWidthComp)     << "AvgComparisons"
             << std::setw(colWidthResult)   << "Result"
             << "\n";
 
-        oss << std::string(80, '-') << "\n";
+        oss << std::string(100, '-') << "\n";
 
         // Print each row
         for (const auto& res : results) {
@@ -94,12 +103,13 @@ public:
                 << std::setw(colWidthCase)     << toString(res.scenario.caseType)  // your helper function
                 << std::setw(colWidthIter)     << res.scenario.iterations
                 << std::setw(colWidthTime)     << res.averageTime
+                << std::setw(colWidthComp)     << res.averageCompressions
                 << std::setw(colWidthResult)   << (res.allCorrect ? "Correct" : "Incorrect")
                 << "\n";
         }
 
         // Optional: trailing line
-        oss << std::string(80, '-') << "\n";
+        oss << std::string(100, '-') << "\n";
 
         return oss.str();
     }

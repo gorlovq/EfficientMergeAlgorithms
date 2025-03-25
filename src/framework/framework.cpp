@@ -3,6 +3,7 @@
 #include <ctime>
 #include <cstdlib>
 #include <vector>
+#include "counting_int.hpp"
 
 inline int rand_in_range(int minVal, int maxVal) {
     return minVal + std::rand() % (maxVal - minVal + 1);
@@ -29,10 +30,10 @@ MergeTestCase generate_sorted_vectors(
     case CornerCaseType::RANDOM:
         {
             for (int i = 0; i < size_a; ++i) {
-                test_case.a[i] = rand_in_range(random_min, random_max);
+                test_case.a[i] = CountingInt(rand_in_range(random_min, random_max));
             }
             for (int i = 0; i < size_b; ++i) {
-                test_case.b[i] = rand_in_range(random_min, random_max);
+                test_case.b[i] = CountingInt(rand_in_range(random_min, random_max));
             }
         }
         break;

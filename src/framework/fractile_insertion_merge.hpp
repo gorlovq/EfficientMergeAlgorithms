@@ -10,8 +10,8 @@ public:
     std::string getName() const override {
         return "FractialInsertionMerge";
     }
-    std::vector<int> merge(const std::vector<int>& a,
-                           const std::vector<int>& b) override {
+    std::vector<CountingInt> merge(const std::vector<CountingInt>& a,
+                           const std::vector<CountingInt>& b) override {
         return fractile_insertion_merge(a, b);
     }
 };
