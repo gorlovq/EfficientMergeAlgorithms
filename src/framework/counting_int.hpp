@@ -1,13 +1,16 @@
 #ifndef COUNTING_INT_HPP
 #define COUNTING_INT_HPP
 
+enum class Slice { A, B };
+
 class CountingInt {
 public:
     int value;
+    Slice source;
 
     inline static long long comparisons = 0;
 
-    CountingInt(int v = 0) : value(v) {}
+    CountingInt(int v = 0, Slice s = Slice::A) : value(v), source(s) {}
 
     static void resetCounter() {
         comparisons = 0;

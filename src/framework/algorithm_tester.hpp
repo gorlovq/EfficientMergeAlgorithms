@@ -12,7 +12,7 @@
 #include <iomanip>
 #include <vector>
 
-constexpr int REPORT_WIDTH = 100;
+constexpr int REPORT_WIDTH = 110;
 
 class AlgorithmTester {
 public:
@@ -25,6 +25,7 @@ explicit AlgorithmTester(
     int colWidthIter     = 10,
     int colWidthTime     = 12,
     int colWidthComp     = 20,
+    int colWidthStable   = 10,
     int colWidthResult   = 10)
     :   reportWidth_(reportWidth),
         colWidthScenario_(colWidthScenario),
@@ -34,6 +35,7 @@ explicit AlgorithmTester(
         colWidthIter_(colWidthIter),
         colWidthTime_(colWidthTime),
         colWidthComp_(colWidthComp),
+        colWidthStable_(colWidthStable),
         colWidthResult_(colWidthResult)
     {}
 
@@ -52,6 +54,7 @@ explicit AlgorithmTester(
             double total_time = 0.0;
             long long total_comparisons = 0;
             bool is_correct = true;
+            bool is_stable = true;
 
             for (int i = 0; i < scenario.iterations; i++) {
                 CountingInt::resetCounter();
@@ -68,16 +71,30 @@ explicit AlgorithmTester(
                 double elapsed = std::chrono::duration<double, std::milli>(end - start).count();
 
                 total_time += elapsed;
-                total_comparisons += CountingInt::comparisons; // Record comparisons for this iteration.
+                total_comparisons += CountingInt::comparisons;
 
                 if (result != test_case.result) {
                     is_correct = false;
+                }
+
+                bool iteration_stable = true;
+                for (size_t j = 1; j < result.size(); j++) {
+                    if (result[j - 1].value == result[j].value) {
+                        // If the previous element came from B and the current one from A, it violates stability.
+                        if (result[j - 1].source == Slice::B && result[j].source == Slice::A) {
+                            iteration_stable = false;
+                            break;
+                        }
+                    }
+                }
+                if (!iteration_stable) {
+                    is_stable = false;
                 }
             }
 
             double avg_time = total_time / scenario.iterations;
             long long avg_comparisons = total_comparisons / scenario.iterations;
-            results.push_back({scenario, avg_time, avg_comparisons, is_correct});
+            results.push_back({scenario, avg_time, avg_comparisons, is_correct, is_stable});
         }
 
         return results;
@@ -102,6 +119,7 @@ explicit AlgorithmTester(
             << std::setw(colWidthIter_)     << "Iter"
             << std::setw(colWidthTime_)     << "AvgTime(ms)"
             << std::setw(colWidthComp_)     << "AvgComparisons"
+            << std::setw(colWidthStable_)   << "Stable"
             << std::setw(colWidthResult_)   << "Result"
             << "\n";
 
@@ -117,7 +135,8 @@ explicit AlgorithmTester(
                 << std::setw(colWidthIter_)     << res.scenario.iterations
                 << std::setw(colWidthTime_)     << res.averageTime
                 << std::setw(colWidthComp_)     << res.averageCompressions
-                << std::setw(colWidthResult_)   << (res.allCorrect ? "Correct" : "Incorrect")
+                << std::setw(colWidthStable_)   << (res.isStable ? "Stable" : "Unstable")
+                << std::setw(colWidthResult_)   << (res.isCorrect ? "Correct" : "Incorrect")
                 << "\n";
         }
 
@@ -135,6 +154,7 @@ private:
     int colWidthIter_;
     int colWidthTime_;
     int colWidthComp_;
+    int colWidthStable_;
     int colWidthResult_;
 
     std::vector<TestScenario> scenarios_;

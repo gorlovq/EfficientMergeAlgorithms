@@ -30,10 +30,10 @@ MergeTestCase generate_sorted_vectors(
     case CornerCaseType::RANDOM:
         {
             for (int i = 0; i < size_a; ++i) {
-                test_case.a[i] = rand_in_range(random_min, random_max);
+                test_case.a[i] = CountingInt(rand_in_range(random_min, random_max), Slice::A);
             }
             for (int i = 0; i < size_b; ++i) {
-                test_case.b[i] = rand_in_range(random_min, random_max);
+                test_case.b[i] = CountingInt(rand_in_range(random_min, random_max), Slice::B);
             }
         }
         break;
@@ -42,10 +42,10 @@ MergeTestCase generate_sorted_vectors(
         {
             int mid = (random_min + random_max) / 2;
             for (int i = 0; i < size_a; ++i) {
-                test_case.a[i] = rand_in_range(random_min, mid);
+                test_case.a[i] = CountingInt(rand_in_range(random_min, mid), Slice::A);
             }
             for (int i = 0; i < size_b; ++i) {
-                test_case.b[i] = rand_in_range(mid + 1, random_max);
+                test_case.b[i] = CountingInt(rand_in_range(mid + 1, random_max), Slice::B);
             }
         }
         break;
@@ -54,10 +54,10 @@ MergeTestCase generate_sorted_vectors(
         {
             int mid = (random_min + random_max) / 2;
             for (int i = 0; i < size_a; ++i) {
-                test_case.a[i] = rand_in_range(mid + 1, random_max);
+                test_case.a[i] = CountingInt(rand_in_range(mid + 1, random_max), Slice::A);
             }
             for (int i = 0; i < size_b; ++i) {
-                test_case.b[i] = rand_in_range(random_min, mid);
+                test_case.b[i] = CountingInt(rand_in_range(random_min, mid), Slice::B);
             }
         }
         break;
@@ -68,10 +68,10 @@ MergeTestCase generate_sorted_vectors(
             int mid1 = random_min + (random_max - random_min) / 3;
             int mid2 = random_min + 2 * (random_max - random_min) / 3;
             for (int i = 0; i < size_a; ++i) {
-                test_case.a[i] = rand_in_range(random_min, mid2);
+                test_case.a[i] = CountingInt(rand_in_range(random_min, mid2), Slice::A);
             }
             for (int i = 0; i < size_b; ++i) {
-                test_case.b[i] = rand_in_range(mid1, random_max);
+                test_case.b[i] = CountingInt(rand_in_range(mid1, random_max), Slice::B);
             }
         }
         break;
@@ -80,8 +80,8 @@ MergeTestCase generate_sorted_vectors(
         {
             test_case.a.resize(1);
             test_case.b.resize(1);
-            test_case.a[0] = rand_in_range(random_min, random_max);
-            test_case.b[0] = rand_in_range(random_min, random_max);
+            test_case.a[0] = CountingInt(rand_in_range(random_min, random_max), Slice::A);
+            test_case.b[0] = CountingInt(rand_in_range(random_min, random_max), Slice::B);
             size_a = 1;
             size_b = 1;
         }
@@ -95,8 +95,8 @@ MergeTestCase generate_sorted_vectors(
 
             for (int i = 0; i < size_a; ++i) {
                 int val = rand_in_range(random_min, random_max);
-                test_case.a[i] = val;
-                test_case.b[i] = val;
+                test_case.a[i] = CountingInt(val, Slice::A);
+                test_case.b[i] = CountingInt(val, Slice::B);
             }
         }
         break;
@@ -105,10 +105,10 @@ MergeTestCase generate_sorted_vectors(
         {
             // Use a small range to force duplicates.
             for (int i = 0; i < size_a; ++i) {
-                test_case.a[i] = rand_in_range(0, 5);
+                test_case.a[i] = CountingInt(rand_in_range(0, 5), Slice::A);
             }
             for (int i = 0; i < size_b; ++i) {
-                test_case.b[i] = rand_in_range(0, 5);
+                test_case.b[i] = CountingInt(rand_in_range(0, 5), Slice::B);
             }
         }
         break;
@@ -121,7 +121,7 @@ MergeTestCase generate_sorted_vectors(
 
             // Fill b with random numbers.
             for (int i = 0; i < size_b; ++i) {
-                test_case.b[i] = rand_in_range(random_min, random_max);
+                test_case.b[i] = CountingInt(rand_in_range(random_min, random_max), Slice::B);
             }
         }
         break;
@@ -148,13 +148,13 @@ MergeTestCase generate_sorted_vectors(
             for (int block = 0; block < total_blocks; ++block) {
                 // Fill block for A: up to K elements.
                 for (int i = 0; i < K && static_cast<int>(test_case.a.size()) < size_a; ++i) {
-                    test_case.a.push_back(rand_in_range(current_value, current_value + range_per_block - 1));
+                    test_case.a.push_back(CountingInt(rand_in_range(current_value, current_value + range_per_block - 1), Slice::A));
                 }
                 current_value += range_per_block;
 
                 // Fill block for B: up to L elements.
                 for (int i = 0; i < L && static_cast<int>(test_case.b.size()) < size_b; ++i) {
-                    test_case.b.push_back(rand_in_range(current_value, current_value + range_per_block - 1));
+                    test_case.b.push_back(CountingInt(rand_in_range(current_value, current_value + range_per_block - 1), Slice::B));
                 }
                 current_value += range_per_block;
             }
@@ -187,13 +187,13 @@ MergeTestCase generate_sorted_vectors(
              for (int block = 0; block < total_blocks; ++block) {
                 // For this case, fill block for B first.
                 for (int i = 0; i < L && static_cast<int>(test_case.b.size()) < size_b; ++i) {
-                    test_case.b.push_back(rand_in_range(current_value, current_value + range_per_block - 1));
+                    test_case.b.push_back(CountingInt(rand_in_range(current_value, current_value + range_per_block - 1), Slice::B));
                 }
                 current_value += range_per_block;
 
                 // Then fill block for A.
                 for (int i = 0; i < K && static_cast<int>(test_case.a.size()) < size_a; ++i) {
-                    test_case.a.push_back(rand_in_range(current_value, current_value + range_per_block - 1));
+                    test_case.a.push_back(CountingInt(rand_in_range(current_value, current_value + range_per_block - 1), Slice::A));
                 }
                 current_value += range_per_block;
             }
