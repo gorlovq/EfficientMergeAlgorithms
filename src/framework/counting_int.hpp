@@ -24,23 +24,28 @@ inline bool operator<(const CountingInt& lhs, const CountingInt& rhs) {
 }
 
 inline bool operator==(const CountingInt& lhs, const CountingInt& rhs) {
-    return !(lhs < rhs) && !(rhs < lhs);
+    ++CountingInt::comparisons;
+    return lhs.value == rhs.value;
 }
 
 inline bool operator!=(const CountingInt& lhs, const CountingInt& rhs) {
-    return !(lhs == rhs);
+    ++CountingInt::comparisons;
+    return lhs.value != rhs.value;
 }
 
 inline bool operator>(const CountingInt& lhs, const CountingInt& rhs) {
-    return rhs < lhs;
+    ++CountingInt::comparisons;
+    return lhs.value > rhs.value;
 }
 
 inline bool operator<=(const CountingInt& lhs, const CountingInt& rhs) {
-    return !(rhs < lhs);
+    ++CountingInt::comparisons;
+    return lhs.value <= rhs.value;
 }
 
 inline bool operator>=(const CountingInt& lhs, const CountingInt& rhs) {
-    return !(lhs < rhs);
+    ++CountingInt::comparisons;
+    return lhs.value >= rhs.value;
 }
 
 #endif // COUNTING_INT_HPP
