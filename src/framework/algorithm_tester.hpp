@@ -56,6 +56,7 @@ explicit AlgorithmTester(
             bool is_correct = true;
             bool is_stable = true;
 
+
             for (int i = 0; i < scenario.iterations; i++) {
 
                 MergeTestCase test_case = generate_sorted_vectors(
