@@ -158,10 +158,6 @@ MergeTestCase generate_sorted_vectors(
                 }
                 current_value += range_per_block;
             }
-
-            // Sort the arrays.
-            std::sort(test_case.a.begin(), test_case.a.end());
-            std::sort(test_case.b.begin(), test_case.b.end());
         }
         break;
 
@@ -197,10 +193,6 @@ MergeTestCase generate_sorted_vectors(
                 }
                 current_value += range_per_block;
             }
-
-            // Sort the arrays.
-            std::sort(test_case.a.begin(), test_case.a.end());
-            std::sort(test_case.b.begin(), test_case.b.end());
         }
         break;
     }
