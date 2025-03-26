@@ -82,10 +82,18 @@ explicit AlgorithmTester(
                 bool iteration_stable = true;
                 for (size_t j = 1; j < result.size(); j++) {
                     if (result[j - 1].value == result[j].value) {
-                        // If the previous element came from B and the current one from A, it violates stability.
-                        if (result[j - 1].source == Slice::B && result[j].source == Slice::A) {
-                            iteration_stable = false;
-                            break;
+                        if (result[j - 1].source == result[j].source) {
+                            // For elements from the same slice, ensure original order is preserved.
+                            if (result[j - 1].index > result[j].index) {
+                                iteration_stable = false;
+                                break;
+                            }
+                        } else {
+                            // For elements from different slices, element from A must come first.
+                            if (result[j - 1].source == Slice::B && result[j].source == Slice::A) {
+                                iteration_stable = false;
+                                break;
+                            }
                         }
                     }
                 }

@@ -207,6 +207,15 @@ MergeTestCase generate_sorted_vectors(
 
     std::sort(test_case.a.begin(), test_case.a.end());
     std::sort(test_case.b.begin(), test_case.b.end());
+
+    // Update the indices to reflect the sorted order.
+    for (int i = 0; i < size_a; ++i) {
+        test_case.a[i].index = i;
+    }
+    for (int i = 0; i < size_b; ++i) {
+        test_case.b[i].index = i;
+    }
+
     test_case.result.resize(size_a + size_b);
     std::merge(test_case.a.begin(), test_case.a.end(),
                test_case.b.begin(), test_case.b.end(),
