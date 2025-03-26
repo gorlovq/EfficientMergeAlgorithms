@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include "counting_int.hpp"
 
 enum class CornerCaseType {
     RANDOM,                 // Completely random
@@ -47,9 +48,9 @@ inline std::string toString(CornerCaseType caseType) {
 
 // Structure to hold the generated test case data.
 struct MergeTestCase {
-    std::vector<int> a;
-    std::vector<int> b;
-    std::vector<int> result;
+    std::vector<CountingInt> a;
+    std::vector<CountingInt> b;
+    std::vector<CountingInt> result;
 };
 
 /**

@@ -2,8 +2,9 @@
 #define ALGORITHM_TESTER_HPP
 
 #include "merge_algorithm.hpp"
-#include "framework.hpp" 
+#include "generate_sorted_vectors.hpp"
 #include "test_scenarious.hpp"
+#include "counting_int.hpp"
 #include <chrono>
 #include <iostream>
 #include <sstream>
@@ -11,45 +12,75 @@
 #include <iomanip>
 #include <vector>
 
+constexpr int REPORT_WIDTH = 100;
+
 class AlgorithmTester {
 public:
+explicit AlgorithmTester(
+    int reportWidth = 100,
+    int colWidthScenario = 10,
+    int colWidthSizeA    = 8,
+    int colWidthSizeB    = 8,
+    int colWidthCase     = 22,
+    int colWidthIter     = 10,
+    int colWidthTime     = 12,
+    int colWidthComp     = 20,
+    int colWidthResult   = 10)
+    :   reportWidth_(reportWidth),
+        colWidthScenario_(colWidthScenario),
+        colWidthSizeA_(colWidthSizeA),
+        colWidthSizeB_(colWidthSizeB),
+        colWidthCase_(colWidthCase),
+        colWidthIter_(colWidthIter),
+        colWidthTime_(colWidthTime),
+        colWidthComp_(colWidthComp),
+        colWidthResult_(colWidthResult)
+    {}
+
     void addScenario(const TestScenario& scenario) {
         scenarios_.push_back(scenario);
     }
 
     std::vector<TestScenarioResult> runTests(MergeAlgorithm& algorithm) {
         std::vector<TestScenarioResult> results;
-    
+
         for (const auto& scenario : scenarios_) {
-            std::cout << "Running scenario: A = " << scenario.sizeA 
-                      << ", B = " << scenario.sizeB 
-                      << ", Case = " << static_cast<int>(scenario.caseType) << std::endl;
-        
+            std::cout << "Running scenario: A = " << scenario.sizeA
+                      << ", B = " << scenario.sizeB
+                      << ", Case = " << toString(scenario.caseType) << std::endl;
+
             double total_time = 0.0;
+            long long total_comparisons = 0;
             bool is_correct = true;
-        
+
             for (int i = 0; i < scenario.iterations; i++) {
+
                 MergeTestCase test_case = generate_sorted_vectors(
                     scenario.sizeA, scenario.sizeB, scenario.caseType,
                     scenario.randomMin, scenario.randomMax,
                     scenario.blockSizeA, scenario.blockSizeB
                 );
-            
+
+                CountingInt::resetCounter();
+
                 auto start = std::chrono::high_resolution_clock::now();
                 auto result = algorithm.merge(test_case.a, test_case.b);
                 auto end = std::chrono::high_resolution_clock::now();
                 double elapsed = std::chrono::duration<double, std::milli>(end - start).count();
-            
+
                 total_time += elapsed;
+                total_comparisons += CountingInt::comparisons; // Record comparisons for this iteration.
+
                 if (result != test_case.result) {
                     is_correct = false;
                 }
             }
-        
+
             double avg_time = total_time / scenario.iterations;
-            results.push_back({scenario, avg_time, is_correct});
+            long long avg_comparisons = total_comparisons / scenario.iterations;
+            results.push_back({scenario, avg_time, avg_comparisons, is_correct});
         }
-    
+
         return results;
     }
 
@@ -59,51 +90,54 @@ public:
         // Set floating-point precision for average time
         oss << std::fixed << std::setprecision(6);
 
-        // Define column widths (tweak as needed)
-        const int colWidthScenario = 10;
-        const int colWidthSizeA    = 8;
-        const int colWidthSizeB    = 8;
-        const int colWidthCase     = 22; // for longer strings like "FIRST_ALL_SMALLER"
-        const int colWidthIter     = 10;
-        const int colWidthTime     = 12;
-        const int colWidthResult   = 10;
+        const std::string separator(REPORT_WIDTH, '-');
 
-        // Print header
-        oss << "Test Report:\n"
-            << std::string(80, '-') << "\n";
+        oss << "Test Report:\n" << separator << "\n";
 
         // Use std::left to left-align the columns (or std::right for right-alignment).
         oss << std::left
-            << std::setw(colWidthScenario) << "Scenario"
-            << std::setw(colWidthSizeA)    << "SizeA"
-            << std::setw(colWidthSizeB)    << "SizeB"
-            << std::setw(colWidthCase)     << "Case"
-            << std::setw(colWidthIter)     << "Iter"
-            << std::setw(colWidthTime)     << "AvgTime(ms)"
-            << std::setw(colWidthResult)   << "Result"
+            << std::setw(colWidthScenario_) << "Scenario"
+            << std::setw(colWidthSizeA_)    << "SizeA"
+            << std::setw(colWidthSizeB_)    << "SizeB"
+            << std::setw(colWidthCase_)     << "Case"
+            << std::setw(colWidthIter_)     << "Iter"
+            << std::setw(colWidthTime_)     << "AvgTime(ms)"
+            << std::setw(colWidthComp_)     << "AvgComparisons"
+            << std::setw(colWidthResult_)   << "Result"
             << "\n";
 
-        oss << std::string(80, '-') << "\n";
+        oss << separator << "\n";
 
         // Print each row
         for (const auto& res : results) {
             oss << std::left
-                << std::setw(colWidthScenario) << "Scenario"
-                << std::setw(colWidthSizeA)    << res.scenario.sizeA
-                << std::setw(colWidthSizeB)    << res.scenario.sizeB
-                << std::setw(colWidthCase)     << toString(res.scenario.caseType)  // your helper function
-                << std::setw(colWidthIter)     << res.scenario.iterations
-                << std::setw(colWidthTime)     << res.averageTime
-                << std::setw(colWidthResult)   << (res.allCorrect ? "Correct" : "Incorrect")
+                << std::setw(colWidthScenario_) << "Scenario"
+                << std::setw(colWidthSizeA_)    << res.scenario.sizeA
+                << std::setw(colWidthSizeB_)    << res.scenario.sizeB
+                << std::setw(colWidthCase_)     << toString(res.scenario.caseType)
+                << std::setw(colWidthIter_)     << res.scenario.iterations
+                << std::setw(colWidthTime_)     << res.averageTime
+                << std::setw(colWidthComp_)     << res.averageCompressions
+                << std::setw(colWidthResult_)   << (res.allCorrect ? "Correct" : "Incorrect")
                 << "\n";
         }
 
-        // Optional: trailing line
-        oss << std::string(80, '-') << "\n";
+        oss << separator << "\n";
 
         return oss.str();
     }
 private:
+    // Column width parameters for the report output table.
+    int reportWidth_;
+    int colWidthScenario_;
+    int colWidthSizeA_;
+    int colWidthSizeB_;
+    int colWidthCase_;
+    int colWidthIter_;
+    int colWidthTime_;
+    int colWidthComp_;
+    int colWidthResult_;
+
     std::vector<TestScenario> scenarios_;
 };
 

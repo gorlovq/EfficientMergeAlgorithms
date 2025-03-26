@@ -10,8 +10,8 @@ public:
     std::string getName() const override {
         return "HwangLinKnuthMerge";
     }
-    std::vector<int> merge(const std::vector<int>& a,
-                           const std::vector<int>& b) override {
+    std::vector<CountingInt> merge(const std::vector<CountingInt>& a,
+                           const std::vector<CountingInt>& b) override {
         return hwang_lin_knuth_merge(a, b);
     }
 };

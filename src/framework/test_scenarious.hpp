@@ -2,8 +2,7 @@
 #ifndef TEST_CONFIG_HPP
 #define TEST_CONFIG_HPP
 
-#include <vector>
-#include "framework.hpp"  // Для CornerCaseType и MergeTestCase
+#include "generate_sorted_vectors.hpp"
 
 // Structure for describing a single test scenario
 struct TestScenario {
@@ -19,9 +18,10 @@ struct TestScenario {
 
 // Structure for storing the results of one test scenario
 struct TestScenarioResult {
-    TestScenario scenario;
-    double averageTime;   // Average execution time (in ms)
-    bool allCorrect;      // Flag indicating if all iterations matched the expected results
+    TestScenario scenario;           // The test scenario configuration
+    double averageTime;              // Average execution time (in ms)
+    long long averageCompressions;   // Average number of compression operations
+    bool allCorrect;                 // Flag indicating if all iterations matched the expected results
 };
 
 #endif // TEST_CONFIG_HPP

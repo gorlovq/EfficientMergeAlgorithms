@@ -292,7 +292,7 @@ IterContainer hwang_lin_static_merge(IterContainer& a, IterContainer& b) {
         int k = n - pow2t;
         if (k < 0) k = 0;
 
-        int a_m = a[m - 1];
+        auto a_m = a[m - 1];
 
         // Step 3: Compare A[m] with B[n - 2^t + 1]
         if (a_m < b[k]) {
@@ -381,10 +381,10 @@ IterContainer hwang_lin_dynamic_merge(IterContainer& a, IterContainer& b) {
             break;
         }
 
-        const int a1 = a[i];
-        const int a2 = a[i + 1];
-        const int a3 = a[i + 2];
-        const int a4 = a[i + 3];
+        auto a1 = a[i];
+        auto a2 = a[i + 1];
+        auto a3 = a[i + 2];
+        auto a4 = a[i + 3];
 
         // NODE A.
         if (a1 > b[j + c1 - 1]) {
