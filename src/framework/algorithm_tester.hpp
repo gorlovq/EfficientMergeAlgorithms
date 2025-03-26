@@ -54,13 +54,14 @@ explicit AlgorithmTester(
             bool is_correct = true;
 
             for (int i = 0; i < scenario.iterations; i++) {
-                CountingInt::resetCounter();
 
                 MergeTestCase test_case = generate_sorted_vectors(
                     scenario.sizeA, scenario.sizeB, scenario.caseType,
                     scenario.randomMin, scenario.randomMax,
                     scenario.blockSizeA, scenario.blockSizeB
                 );
+
+                CountingInt::resetCounter();
 
                 auto start = std::chrono::high_resolution_clock::now();
                 auto result = algorithm.merge(test_case.a, test_case.b);
