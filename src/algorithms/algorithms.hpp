@@ -57,26 +57,6 @@ IterContainer two_way_merge(const IterContainer& a, const IterContainer& b) {
     return r;
 }
 
-std::vector<int> simple_binary_merge(const std::vector<int>& a, std::vector<int>& b) {
-    int m = static_cast<int>(a.size()) - 1;
-    int n = static_cast<int>(b.size()) - 1;
-
-    while (m >= 0) {
-        auto b_end = b.begin();
-        std::advance(b_end, n + 1);
-
-        // binary search for the insert position
-        auto it = std::lower_bound(b.begin(), b_end, a[m]);
-
-        n = static_cast<int>(std::distance(b.begin(), it)) + 1;
-
-        b.insert(it, a[m]);
-        m--;
-    }
-
-    return b;
-}
-
 template <typename IterContainer, typename T>
 void binary_insertion(IterContainer& arr, const T& elem) {
     typename IterContainer::iterator l = arr.begin();
@@ -182,63 +162,6 @@ IterContainer hwang_lin_knuth_merge(const IterContainer& a, const IterContainer&
     } else {
         std::copy(a_left, a_right, r.begin());
     }
-
-    return r;
-}
-
-// Binary Merge Algorithm (https://github.com/rklaehn/binary-merge)
-template <typename IterContainer>
-IterContainer binary_merge(const IterContainer& a, const IterContainer& b) {
-    IterContainer r(a.size() + b.size());
-
-    auto a_begin = a.begin();
-    auto b_begin = b.begin();
-    auto r_begin = r.begin();
-
-    // Определение вложенной функции binary_merge_recursive
-    std::function<void(typename IterContainer::const_iterator&,
-                       typename IterContainer::const_iterator&,
-                       typename IterContainer::iterator&,
-                       size_t, size_t)> binary_merge_recursive;
-
-    binary_merge_recursive = [&](typename IterContainer::const_iterator& a_it,
-                                 typename IterContainer::const_iterator& b_it,
-                                 typename IterContainer::iterator& r_it,
-                                 size_t an, size_t bn) {
-        if (an == 0) {
-            std::copy(b_it, b_it + bn, r_it);
-            r_it += bn;
-            b_it += bn;
-            return;
-        } else if (bn == 0) {
-            std::copy(a_it, a_it + an, r_it);
-            r_it += an;
-            a_it += an;
-            return;
-        } else {
-            // neither a nor b are 0
-            size_t am = an / 2;
-            auto a_mid = a_it + am;
-
-            auto b_mid = std::lower_bound(b_it, b_it + bn, *a_mid);
-            size_t bm = std::distance(b_it, b_mid);
-
-            binary_merge_recursive(a_it, b_it, r_it, am, bm);
-
-            if (b_mid != b_it + bn && *b_mid == *a_mid) {
-                // same elements
-                *r_it++ = *a_mid++;
-                *r_it++ = *b_mid++;
-                binary_merge_recursive(a_mid, b_mid, r_it, an - am - 1, bn - bm - 1);
-            } else {
-                // not found
-                *r_it++ = *a_mid++;
-                binary_merge_recursive(a_mid, b_mid, r_it, an - am - 1, bn - bm);
-            }
-        }
-    };
-
-    binary_merge_recursive(a_begin, b_begin, r_begin, a.size(), b.size());
 
     return r;
 }
