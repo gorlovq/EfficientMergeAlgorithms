@@ -149,90 +149,30 @@ explicit AlgorithmTester(
         return oss.str();
     }
 
-    // std::vector<IterationResult> runTestIterations(MergeAlgorithm& algorithm) {
-    //     std::vector<IterationResult> iterationResults;
+    void generateCSV(const std::string& filename, const std::vector<TestScenarioResult>& results) {
+        std::ofstream file(filename);
+        if (!file.is_open()) {
+            std::cerr << "Error: unable to open file " << filename << " for writing." << std::endl;
+            return;
+        }
 
-    //     for (const auto& scenario : scenarios_) {
-    //         // For each scenario, run each iteration separately.
-    //         for (int iter = 0; iter < scenario.iterations; iter++) {
-    //             CountingInt::resetCounter();
+        // Write CSV header.
+        file << "TestCase,SizeA,SizeB,Case,Time(ms),Comparisons,Stable,Correct\n";
 
-    //             MergeTestCase test_case = generate_sorted_vectors(
-    //                 scenario.sizeA, scenario.sizeB, scenario.caseType,
-    //                 scenario.randomMin, scenario.randomMax,
-    //                 scenario.blockSizeA, scenario.blockSizeB
-    //             );
-
-    //             auto start = std::chrono::high_resolution_clock::now();
-    //             auto result = algorithm.merge(test_case.a, test_case.b);
-    //             auto end = std::chrono::high_resolution_clock::now();
-    //             double elapsed = std::chrono::duration<double, std::milli>(end - start).count();
-
-    //             // Check correctness.
-    //             bool iterationCorrect = (result == test_case.result);
-
-    //             // Check stability.
-    //             bool iterationStable = true;
-    //             for (size_t j = 1; j < result.size(); j++) {
-    //                 if (result[j - 1].value == result[j].value) {
-    //                     // If from the same slice, check sorted order by original (sorted) index.
-    //                     if (result[j - 1].source == result[j].source) {
-    //                         if (result[j - 1].index > result[j].index) {
-    //                             iterationStable = false;
-    //                             break;
-    //                         }
-    //                     } else {
-    //                         // For elements from different slices, A should come first.
-    //                         if (result[j - 1].source == Slice::B && result[j].source == Slice::A) {
-    //                             iterationStable = false;
-    //                             break;
-    //                         }
-    //                     }
-    //                 }
-    //             }
-
-    //             // Record this iteration's result.
-    //             IterationResult ir {
-    //                 scenario,
-    //                 iter,
-    //                 elapsed,
-    //                 CountingInt::comparisons,
-    //                 iterationCorrect,
-    //                 iterationStable
-    //             };
-    //             iterationResults.push_back(ir);
-    //         }
-    //     }
-
-    //     return iterationResults;
-    // }
-
-    // void generateCSV(const std::string& filename, const std::vector<IterationResult>& results) {
-    //     std::ofstream file(filename);
-    //     if (!file.is_open()) {
-    //         std::cerr << "Error: unable to open file " << filename << " for writing." << std::endl;
-    //         return;
-    //     }
-
-    //     // Write CSV header.
-    //     file << "TestCase,SizeA,SizeB,Case,Iterations,Iteration,Time(ms),Comparisons,Stable,Correct\n";
-
-    //     // Write each iteration result as a row.
-    //     for (const auto& res : results) {
-    //         // Use a helper function to convert case type to string (e.g., toString(res.scenario.caseType)).
-    //         file << "Scenario" << ","  // You might want to number or name your scenarios.
-    //              << res.scenario.sizeA << ","
-    //              << res.scenario.sizeB << ","
-    //              << toString(res.scenario.caseType) << ","
-    //              << res.scenario.iterations << ","
-    //              << res.iteration << ","
-    //              << res.time << ","
-    //              << res.comparisons << ","
-    //              << (res.isStable ? "Stable" : "Unstable") << ","
-    //              << (res.isCorrect ? "Correct" : "Incorrect") << "\n";
-    //     }
-    //     file.close();
-    // }
+        // Write each iteration result as a row.
+        for (const auto& res : results) {
+            // Use a helper function to convert case type to string (e.g., toString(res.scenario.caseType)).
+            file << "Scenario" << ","  // You might want to number or name your scenarios.
+                 << res.scenario.sizeA << ","
+                 << res.scenario.sizeB << ","
+                 << toString(res.scenario.caseType) << ","
+                 << res.time << ","
+                 << res.compressions << ","
+                 << (res.isStable ? "Stable" : "Unstable") << ","
+                 << (res.isCorrect ? "Correct" : "Incorrect") << "\n";
+        }
+        file.close();
+    }
 private:
     // Column width parameters for the report output table.
     int reportWidth_;

@@ -9,7 +9,31 @@
 #include "framework/algorithm_tester.hpp"
 #include "framework/two_way_merge.hpp"
 
-int main() {
+enum class ReportOutput {
+    Console,
+    Directory
+};
+
+int main(int argc, char* argv[]) {
+    ReportOutput output = ReportOutput::Console;
+    std::string outputDirName;
+
+    for (int i = 1; i < argc; i++) {
+        std::string arg = argv[i];
+        if (arg == "--output" && i + 1 < argc) {
+            std::cout<< "qwe\n";
+            outputDirName = argv[++i];
+            output = ReportOutput::Directory;
+        }
+    }
+
+    if (output == ReportOutput::Directory) {
+        if (!std::filesystem::exists(outputDirName)) {
+            std::cerr << "Error: directory doesn't exist " << outputDirName << std::endl;
+            return 1;
+        }
+    }
+
     AlgorithmTester tester;
     tester.addScenario({10, 100, CornerCaseType::RANDOM, 0, 100, 10, 10});
     tester.addScenario({249, 200000, CornerCaseType::RANDOM, 0, 300000, 10, 10});
@@ -36,6 +60,17 @@ int main() {
         auto results = tester.runTests(*alg);
         std::string report = tester.generateReport(results);
         std::cout << report << std::endl;
+
+        if (output == ReportOutput::Directory) {
+            std::string filePath = outputDirName;
+            if (filePath.back() != '/' && filePath.back() != '\\') {
+                filePath += '/';
+            }
+
+            filePath += alg->getName() + ".csv";
+
+            tester.generateCSV(filePath, { results });
+        }
     }
 
     return 0;
