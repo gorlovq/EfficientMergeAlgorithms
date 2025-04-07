@@ -20,8 +20,7 @@ int main(int argc, char* argv[]) {
 
     for (int i = 1; i < argc; i++) {
         std::string arg = argv[i];
-        if (arg == "--output" && i + 1 < argc) {
-            std::cout<< "qwe\n";
+        if (arg == "--csv" && i + 1 < argc) {
             outputDirName = argv[++i];
             output = ReportOutput::Directory;
         }
