@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <stdexcept>
 #include "counting_int.hpp"
 
 enum class CornerCaseType {

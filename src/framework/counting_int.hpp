@@ -1,6 +1,8 @@
 #ifndef COUNTING_INT_HPP
 #define COUNTING_INT_HPP
 
+#include <iostream>
+
 // Enum for indicating the source slice.
 enum class Slice { A, B };
 
@@ -47,6 +49,10 @@ inline bool operator<=(const CountingInt& lhs, const CountingInt& rhs) {
 inline bool operator>=(const CountingInt& lhs, const CountingInt& rhs) {
     ++CountingInt::comparisons;
     return lhs.value >= rhs.value;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const CountingInt& x) { // вывод значения через стандартный поток
+    return os << x.value;
 }
 
 #endif // COUNTING_INT_HPP

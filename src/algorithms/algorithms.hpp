@@ -496,5 +496,86 @@ IterContainer fractile_insertion_merge(const IterContainer& a, const IterContain
     return r;
 }
 
+// SymMerge Algorithm (On a Simple and Stable Merging Algorithm, Pok-Son Kim, Arne Kutzner)
+template <typename ContainerIter>
+void simple_kim_kutzner_alg(ContainerIter begin, ContainerIter separator, ContainerIter end) {
+    using diff_t = typename std::iterator_traits<ContainerIter>::difference_type;
+    diff_t left_size = std::distance(begin, separator);
+    diff_t right_size = std::distance(separator, end);
+
+    if (left_size == 0 || right_size == 0) {
+        return;
+    } else if (left_size == 1 && right_size == 1) {
+        if (*begin > *separator) std::iter_swap(begin, separator);
+        return;
+    }
+
+    if (left_size <= right_size) { // |u| <= |v| (left part less or equal to right part)
+        // 1
+        diff_t rest_size = right_size - left_size;
+        diff_t v2_size = rest_size / 2;
+        diff_t v1_size = rest_size - v2_size;
+        ContainerIter w_begin = std::next(separator, v1_size);
+        ContainerIter v2_begin = std::next(w_begin, left_size);
+
+        // 2
+        diff_t t = 0;
+        for (; t < left_size; t++) {
+            if (*(begin + t) >= *(v2_begin - t - 1)) break;
+        }
+        ContainerIter u2_begin = (std::distance(std::next(begin, t), separator) < 1) ? begin : std::next(begin, t); 
+        ContainerIter w2_begin = std::next(v2_begin, -t);
+
+        // 3
+        std::rotate(u2_begin, separator, w2_begin);
+
+        // 4
+        simple_kim_kutzner_alg(begin, u2_begin, separator);
+        simple_kim_kutzner_alg(separator, w2_begin, end);
+    } else { // |u| > |v| (left part greater than right part)
+        // 1
+        diff_t rest_size = left_size - right_size;
+        diff_t u2_size = rest_size / 2;
+        diff_t u1_size = rest_size - u2_size;
+        ContainerIter w_begin = std::next(begin, u1_size);
+        ContainerIter u2_begin = std::next(w_begin, right_size);
+
+        // 2
+        diff_t t = 0;
+        for (; t < right_size; t++) {
+            if (*(w_begin + t) >= *(end - t - 1)) break;
+        }
+        ContainerIter v2_begin = std::next(end, -t);
+        ContainerIter w2_begin = (std::distance(std::next(w_begin, t), separator) < 1) ? w_begin : std::next(w_begin, t); 
+
+        // 3
+        std::rotate(w2_begin, separator, v2_begin);
+
+        // 4
+        simple_kim_kutzner_alg(begin, w2_begin, u2_begin);
+        simple_kim_kutzner_alg(u2_begin, v2_begin, end);
+    }
+}
+
+template <typename IterContainer>
+IterContainer simple_kim_kutzner_merge(IterContainer& a, IterContainer& b) {
+    if (a.size() >= b.size()) {
+        auto orig_a_size = a.size();
+        a.insert(a.end(),
+                    std::make_move_iterator(b.begin()),
+                    std::make_move_iterator(b.end()));
+        b.clear();
+        simple_kim_kutzner_alg(a.begin(), std::next(a.begin(), orig_a_size), a.end());
+        return a;
+    } else {
+        auto orig_b_size = b.size();
+        b.insert(b.end(),
+                     std::make_move_iterator(a.begin()),
+                     std::make_move_iterator(a.end()));
+        a.clear();
+        simple_kim_kutzner_alg(b.begin(), std::next(b.begin(), orig_b_size), b.end());
+        return b;
+    }
+}
 
 #endif // ALGORITHMS_H
