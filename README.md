@@ -16,3 +16,68 @@
 
 - **A Simple Algorithm for Stable Minimum Storage Merging** by Pok-Son Kim and Arne Kutzner: A sophisticated algorithm focusing on minimizing storage requirements during the merge process.
 - **Manacher Improved Hwang-Lin Version**: A further optimized version of the Hwang-Lin Merging Algorithm incorporating improvements by Manacher.
+
+## Building and Running
+
+### Prerequisites
+
+- C++ compiler with C++20 support (g++ or clang++)
+- Python 3.8 or higher
+- Make
+
+### Setup and Build
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-username/EfficientMergeAlgorithms.git
+   cd EfficientMergeAlgorithms
+   ```
+
+2. Build the project:
+   ```bash
+   make
+   ```
+   This will:
+   - Compile the C++ sources
+   - Create a Python virtual environment
+   - Install necessary Python dependencies (pandas, matplotlib, scipy)
+   - Generate test data
+   - Generate all plots
+
+### Generating Only Specific Plots
+
+- To generate only 3D plots:
+   ```bash
+   make plots_3d
+   ```
+
+- To generate 2D comparison plots with a specific M value (default is 1000):
+   ```bash
+   make plots_2d M=1000
+   ```
+
+- To generate 2D execution time plots with a specific M value:
+   ```bash
+   make plots_2d_time M=1000
+   ```
+
+### Regenerating Data
+
+If you need to regenerate the test data:
+```bash
+make generate_data
+```
+
+### Cleaning Up
+
+To clean all generated files:
+```bash
+make clean
+```
+
+## Generated Plots
+
+After running the commands, the plots will be available in the `plots` directory:
+- 3D plots: showing each algorithm's performance across different combinations of array sizes
+- 2D comparison plots: showing number of comparisons with fixed first array size
+- 2D execution time plots: showing execution time with fixed first array size
