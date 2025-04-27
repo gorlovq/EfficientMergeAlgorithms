@@ -13,7 +13,7 @@
 
 int main() {
     AlgorithmTester tester;
-    tester.addScenario({10, 100, CornerCaseType::RANDOM, 0, 100, 10, 10, 5});
+    tester.addScenario({1000, 1000, CornerCaseType::RANDOM, 0, 100, 10, 10, 5});
     tester.addScenario({249, 200000, CornerCaseType::RANDOM, 0, 300000, 10, 10, 5});
     tester.addScenario({4440, 70000, CornerCaseType::FIRST_ALL_SMALLER, 0, 99000, 10, 10, 5});
     tester.addScenario({2300, 100000, CornerCaseType::PARTIAL_OVERLAP, 0, 999999, 10, 10, 5});

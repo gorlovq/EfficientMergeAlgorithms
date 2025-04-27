@@ -504,8 +504,7 @@ void simple_kim_kutzner_alg(ContainerIter begin, ContainerIter separator, Contai
     diff_t right_size = std::distance(separator, end);   // |v|
 
     // trivial case
-    if (left_size == 0 || right_size == 0) 
-        return;
+    if (left_size == 0 || right_size == 0) return;
 
     // if |u| or |v| equal 1
     if (left_size == 1) {
@@ -537,8 +536,8 @@ void simple_kim_kutzner_alg(ContainerIter begin, ContainerIter separator, Contai
 
     while (low < high) {
         diff_t t = (low + high) / 2;
-        ContainerIter lIt = std::next(begin,     t);
-        ContainerIter rIt = std::prev(n,       t + 1);
+        ContainerIter lIt = std::next(begin, t);
+        ContainerIter rIt = std::prev(n, t + 1);
         if (!(*rIt < *lIt)) {
             low = t + 1;
         } else {
