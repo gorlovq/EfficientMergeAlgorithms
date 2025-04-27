@@ -14,23 +14,23 @@ parser.add_argument('--metric', type=str, choices=['comparisons', 'time'], defau
                     help='Metric to plot: comparisons or execution time (default: comparisons)')
 args = parser.parse_args()
 
-# Get all CSV files from results directory
+# Get CSV files and check if they exist
 csv_files = glob.glob('results/*.csv')
 
 if not csv_files:
     print("Error: No CSV files found in the 'results' directory.")
     sys.exit(1)
 
-# Create plots directory if it doesn't exist
+# Create output directory
 plots_dir = 'plots'
 if not os.path.exists(plots_dir):
     os.makedirs(plots_dir)
 
-# Fixed value of m (first array size) - now from command line argument
+# Get parameters from command line
 FIXED_M = args.m
 METRIC = args.metric
 
-# Colors and styles for different algorithms
+# Define colors for algorithms
 COLORS = {
     'TwoWayMerge': '#4472C4',  # Blue
     'FractialInsertionMerge': '#ED7D31',  # Orange
@@ -39,22 +39,20 @@ COLORS = {
     'HwangLinStaticMerge': '#5B9BD5',  # Light Blue
 }
 
-# Create lists to store data for plotting
+# Initialize data containers
 algorithms = []
 sizes_n = []
-metrics_values = []  # Generic name for either comparisons or time
-found_m_value = False  # Flag to track if we found any data with the specified M value
+metrics_values = []
+found_m_value = False
 
-# Determine which column to use based on the metric
+# Select metric column based on input
 metric_column = 'Comparisons' if METRIC == 'comparisons' else 'Time(ms)'
 
-# Process each CSV file (assuming each file contains data for one algorithm)
+# Process each algorithm's CSV file
 for csv_file in csv_files:
-    # Get algorithm name from filename
     algorithm_name = os.path.splitext(os.path.basename(csv_file))[0]
     print(f"Processing {algorithm_name} from {csv_file}")
     
-    # Load the CSV data
     df = pd.read_csv(csv_file)
     print(f"  Loaded {len(df)} rows from {csv_file}")
     
@@ -63,8 +61,8 @@ for csv_file in csv_files:
     print(f"  After filtering for M={FIXED_M}, {len(filtered_data)} rows remain")
     
     if not filtered_data.empty:
-        found_m_value = True  # We found at least one algorithm with data for this M
-        # If we have data with the fixed M value
+        found_m_value = True
+        # Process each test case
         for case in filtered_data['Case'].unique():
             case_data = filtered_data[filtered_data['Case'] == case]
             print(f"  Processing case '{case}' with {len(case_data)} rows")
@@ -72,7 +70,7 @@ for csv_file in csv_files:
             # Sort by size of second array
             case_data = case_data.sort_values(by='N')
             
-            # Add data points
+            # Collect data points
             for _, row in case_data.iterrows():
                 algorithms.append(algorithm_name)
                 sizes_n.append(row['N'])
@@ -81,19 +79,18 @@ for csv_file in csv_files:
     else:
         print(f"No data with M={FIXED_M} found for {algorithm_name}")
 
-# Check if we found any data with the specified M value
+# Check if any data with the specified M value was found
 if not found_m_value:
     print(f"Error: No data found with M={FIXED_M} in any algorithm.")
     print("Available M values:")
     
-    # Get available M values from all CSV files
+    # Show available M values to help the user
     all_m_values = set()
     for csv_file in csv_files:
         df = pd.read_csv(csv_file)
         if 'M' in df.columns:
             all_m_values.update(df['M'].unique())
     
-    # Print sorted M values
     if all_m_values:
         for m in sorted(all_m_values):
             print(f"  - M={m}")
@@ -102,43 +99,44 @@ if not found_m_value:
     
     sys.exit(1)
 
-# Create a DataFrame for easier plotting
+# Create DataFrame for plotting
 plot_df = pd.DataFrame({
     'Algorithm': algorithms,
     'SizeN': sizes_n,
     'MetricValue': metrics_values
 })
 
-# Find the maximum N value in the data to set appropriate x-axis limit
+# Set X-axis limits
 max_n = plot_df['SizeN'].max() if not plot_df.empty else 10000
 min_n = plot_df['SizeN'].min() if not plot_df.empty else 1000
 
-# Round limits to nice powers of 10
+# Round limits to powers of 10 for log scale
 x_min = 10 ** np.floor(np.log10(min_n))
 x_max = 10 ** np.ceil(np.log10(max_n))
 
-# Calculate Y limits based on data
+# Calculate Y-axis limits based on data
 if not plot_df.empty:
     y_min = plot_df['MetricValue'].min() * 0.9
     y_max = plot_df['MetricValue'].max() * 1.1
     
-    # Ensure we don't have zero or negative values in log scale
+    # Handle log scale requirements
     if y_min <= 0:
         y_min = plot_df['MetricValue'][plot_df['MetricValue'] > 0].min() * 0.9
-        if np.isnan(y_min):  # If still no positive values
+        if np.isnan(y_min):
             y_min = 0.001
 else:
+    # Default limits if no data
     if METRIC == 'comparisons':
         y_min, y_max = 1000, 1000000
-    else:  # time
-        y_min, y_max = 0.001, 10  # milliseconds
-    
-# Round y limits to powers of 10 for better log scale
+    else:
+        y_min, y_max = 0.001, 10
+
+# Round Y limits for log scale
 if y_min > 0:
     y_min = 10 ** np.floor(np.log10(y_min))
     y_max = 10 ** np.ceil(np.log10(y_max))
 
-# Print summary of data for debugging
+# Print summary
 print("\nData summary for the plot:")
 for algorithm in plot_df['Algorithm'].unique():
     alg_data = plot_df[plot_df['Algorithm'] == algorithm]
@@ -146,7 +144,7 @@ for algorithm in plot_df['Algorithm'].unique():
     print(f"  N values: {sorted(alg_data['SizeN'].unique())}")
     print(f"  {metric_column} values: {sorted(alg_data['MetricValue'].unique())}")
 
-# Create a single figure with appropriate settings
+# Initialize the figure
 fig, ax = plt.subplots(figsize=(16, 10), facecolor='white', dpi=100)
 ax.set_facecolor('white')
 
@@ -154,42 +152,42 @@ ax.set_facecolor('white')
 ax.set_xscale('log')
 ax.set_yscale('log')
 
-# Set axis limits
+# Apply axis limits
 ax.set_xlim(x_min, x_max)
 ax.set_ylim(y_min, y_max)
 
-# Define major ticks at powers of 10
+# Configure log scale ticks
 major_x_ticks = [10**i for i in range(int(np.log10(x_min)), int(np.log10(x_max)) + 1)]
 major_y_ticks = [10**i for i in range(int(np.log10(y_min)), int(np.log10(y_max)) + 1)]
 
-# Custom formatters for clean labels
+# Formatter for clean tick labels
 def format_ticks(x, pos):
     return f'{int(x)}' if x >= 1 else f'{x:.1f}'
 
 ax.xaxis.set_major_locator(LogLocator(base=10.0, numticks=len(major_x_ticks)))
 ax.yaxis.set_major_locator(LogLocator(base=10.0, numticks=len(major_y_ticks)))
 
-# Set tick formatters
+# Apply formatters
 ax.xaxis.set_major_formatter(FuncFormatter(format_ticks))
 ax.yaxis.set_major_formatter(FuncFormatter(format_ticks))
 
-# Увеличиваем жирность и размер цифр на осях
+# Style the tick labels
 ax.tick_params(axis='both', which='major', labelsize=12)
 plt.setp(ax.get_xticklabels(), fontweight='bold')
 plt.setp(ax.get_yticklabels(), fontweight='bold')
 
-# Remove minor ticks but keep the grid
+# Remove unnecessary ticks
 ax.tick_params(axis='both', which='minor', length=0)
 ax.tick_params(axis='both', which='major', length=0)
 
-# Create clean grid
+# Add grid
 ax.grid(True, which='major', color='#CCCCCC', linestyle='-', linewidth=0.8)
-ax.grid(False, which='minor')  # Disable minor grid
+ax.grid(False, which='minor')
 
-# Add labels with better formatting
+# Add axis labels
 ax.set_xlabel('РАЗМЕР ВТОРОГО МАССИВА', fontsize=14, labelpad=10)
 
-# Set appropriate Y-axis label based on metric
+# Set Y-axis label based on metric
 if METRIC == 'comparisons':
     y_label = 'КОЛИЧЕСТВО СРАВНЕНИЙ'
 else:
@@ -197,17 +195,17 @@ else:
 
 ax.set_ylabel(y_label, fontsize=14, labelpad=10, rotation=90)
 
-# Plot each algorithm as a separate line
+# Plot each algorithm
 for algorithm in plot_df['Algorithm'].unique():
     alg_data = plot_df[plot_df['Algorithm'] == algorithm]
     
-    # Sort by size of second array to ensure correct line
+    # Sort by N for correct line
     alg_data = alg_data.sort_values(by='SizeN')
     
-    # Use the predefined color for this algorithm if available
+    # Get color for algorithm
     color = COLORS.get(algorithm, 'black')
     
-    # Plot the line with markers
+    # Create the plot
     ax.plot(alg_data['SizeN'], alg_data['MetricValue'], 
             label=algorithm, 
             color=color,
@@ -215,7 +213,7 @@ for algorithm in plot_df['Algorithm'].unique():
             marker='o',
             markersize=5)
 
-# Set title with better positioning
+# Set title
 if METRIC == 'comparisons':
     title = f'Среднее количество сравнений, совершаемых\nразными алгоритмами при размере первого\nмассива m = {FIXED_M}'
 else:
@@ -223,11 +221,11 @@ else:
 
 ax.set_title(title, fontsize=18, pad=20)
 
-# Add legend at the bottom with title
+# Add legend
 legend = ax.legend(fontsize=14, loc='upper center', bbox_to_anchor=(0.5, -0.15), 
                  frameon=True, facecolor='white', ncol=5)
 
-# Clean white background
+# Style background
 ax.patch.set_facecolor('white')
 fig.patch.set_facecolor('white')
 
@@ -237,16 +235,17 @@ for spine in ax.spines.values():
     spine.set_color('black')
     spine.set_linewidth(1.0)
 
-# Adjust layout and save with white background
+# Adjust layout
 plt.tight_layout()
-plt.subplots_adjust(bottom=0.25, left=0.1, right=0.9)  # Увеличиваем отступ снизу для легенды и задаем одинаковые отступы слева и справа
+plt.subplots_adjust(bottom=0.25, left=0.1, right=0.9)
 
-# Set filename based on metric
+# Create filename based on metric
 if METRIC == 'comparisons':
     filename = f'comparison_fixed_m_{FIXED_M}.png'
 else:
     filename = f'time_fixed_m_{FIXED_M}.png'
 
+# Save the plot
 plt.savefig(f'{plots_dir}/{filename}', dpi=300, bbox_inches='tight', facecolor='white')
 plt.close()
 
