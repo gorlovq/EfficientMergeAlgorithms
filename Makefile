@@ -21,6 +21,9 @@ PYTHON = python3
 VENV_PYTHON = $(VENV_DIR)/bin/python3
 VENV_PIP = $(VENV_DIR)/bin/pip
 
+# Default value for fixed array size M
+M ?= 1000
+
 # Source files
 SOURCES = $(wildcard $(SRC_DIR)/*.cpp) $(wildcard $(SRC_DIR)/framework/*.cpp)
 HEADERS = $(wildcard $(SRC_DIR)/*.hpp) $(wildcard $(SRC_DIR)/framework/*.hpp)
@@ -29,10 +32,11 @@ OBJECTS = $(SOURCES:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
 # Include paths
 INCLUDES = -I$(INCLUDE_DIR) -I$(SRC_DIR) -I$(FRAMEWORK_DIR)
 
-# Targets
-.PHONY: all clean plots generate_data setup venv
+# List all PHONY targets
+.PHONY: all clean plots_3d plots_2d plots_2d_time generate_data setup venv
 
-all: generate_data plots
+# Default target
+all: generate_data plots_3d plots_2d plots_2d_time
 
 # Create build directories
 $(BUILD_DIR)/framework:
@@ -59,17 +63,26 @@ venv: $(VENV_DIR)
 
 # Python dependencies setup
 setup: venv
-	$(VENV_PIP) install pandas matplotlib
+	$(VENV_PIP) install pandas matplotlib scipy
 
 # Data generation target
 generate_data: $(BUILD_DIR)/main $(RESULTS_DIR)
 	@mkdir -p $(BUILD_DIR)
 	./$(BUILD_DIR)/main --csv $(RESULTS_DIR)
 
-# Plot generation targets
-plots: generate_data setup $(PLOTS_DIR)
+# 3D plot generation target
+plots_3d: setup $(PLOTS_DIR)
 	$(VENV_PYTHON) $(TOOLS_DIR)/plot_generator.py
 
+# 2D plot generation target for comparisons (without data generation)
+plots_2d: setup $(PLOTS_DIR)
+	$(VENV_PYTHON) $(TOOLS_DIR)/plot_2d_generator.py --m $(M) --metric comparisons
+
+# 2D plot generation target for execution time (without data generation)
+plots_2d_time: setup $(PLOTS_DIR)
+	$(VENV_PYTHON) $(TOOLS_DIR)/plot_2d_generator.py --m $(M) --metric time
+
+# Clean everything
 clean:
 	rm -rf $(BUILD_DIR)/*
 	rm -rf $(RESULTS_DIR)/*

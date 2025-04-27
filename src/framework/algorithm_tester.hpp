@@ -157,7 +157,7 @@ explicit AlgorithmTester(
         }
 
         // Write CSV header.
-        file << "TestCase,SizeA,SizeB,Case,Time(ms),Comparisons,Stable,Correct\n";
+        file << "TestCase,M,N,Case,Time(ms),Comparisons,Stable,Correct\n";
 
         // Write each iteration result as a row.
         for (const auto& res : results) {

@@ -36,18 +36,16 @@ int main(int argc, char* argv[]) {
     AlgorithmTester tester;
 
     tester.addScenario({100, 1000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});
-    tester.addScenario({200, 2000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});
-    tester.addScenario({245, 5000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});
-            // tester.addScenario({m, n, CornerCaseType::FIRST_ALL_SMALLER, 0, 1000000, 5, 5});
-            // tester.addScenario({m, n, CornerCaseType::PARTIAL_OVERLAP, 0, 1000000, 5, 5});
-    
+    tester.addScenario({500, 1000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});
+    tester.addScenario({1000, 1000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});
+    tester.addScenario({1000, 10000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});
 
     std::vector<std::unique_ptr<MergeAlgorithm>> algorithms;
     algorithms.push_back(std::make_unique<TwoWayMergeAlgorithm>());
-    // algorithms.push_back(std::make_unique<HwangLinDynamicMergeAlgorithm>());
-    // algorithms.push_back(std::make_unique<HwangLinKnuthMergeAlgorithm>());
-    // algorithms.push_back(std::make_unique<HwangLinStaticMergeAlgorithm>());
-    // algorithms.push_back(std::make_unique<FractialInsertionMergeAlgorithm>());
+    algorithms.push_back(std::make_unique<HwangLinDynamicMergeAlgorithm>());
+    algorithms.push_back(std::make_unique<HwangLinKnuthMergeAlgorithm>());
+    algorithms.push_back(std::make_unique<HwangLinStaticMergeAlgorithm>());
+    algorithms.push_back(std::make_unique<FractialInsertionMergeAlgorithm>());
 
     const std::string separator(REPORT_WIDTH, '=');
 
