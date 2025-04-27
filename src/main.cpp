@@ -9,15 +9,36 @@
 #include "framework/algorithm_tester.hpp"
 #include "framework/two_way_merge.hpp"
 
+enum class OutputFormat {
+    Console,
+    CsvFile
+};
 
-int main() {
+int main(int argc, char* argv[]) {
+    OutputFormat output = OutputFormat::Console;
+    std::string outputDirName;
+
+    for (int i = 1; i < argc; i++) {
+        std::string arg = argv[i];
+        if (arg == "--csv" && i + 1 < argc) {
+            outputDirName = argv[++i];
+            output = OutputFormat::CsvFile;
+        }
+    }
+
+    if (output == OutputFormat::CsvFile) {
+        if (!std::filesystem::exists(outputDirName)) {
+            std::cerr << "Error: directory doesn't exist " << outputDirName << std::endl;
+            return 1;
+        }
+    }
+
     AlgorithmTester tester;
-    tester.addScenario({10, 100, CornerCaseType::RANDOM, 0, 100, 10, 10, 5});
-    tester.addScenario({249, 200000, CornerCaseType::RANDOM, 0, 300000, 10, 10, 5});
-    tester.addScenario({4440, 70000, CornerCaseType::FIRST_ALL_SMALLER, 0, 99000, 10, 10, 5});
-    tester.addScenario({2300, 100000, CornerCaseType::PARTIAL_OVERLAP, 0, 999999, 10, 10, 5});
-    tester.addScenario({1000, 22000, CornerCaseType::DUPLICATES_IN_BOTH, 0, 100, 10, 10, 3});
 
+    tester.addScenario({100, 1000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});
+    tester.addScenario({500, 1000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});
+    tester.addScenario({1000, 1000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});
+    tester.addScenario({1000, 10000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});
 
     std::vector<std::unique_ptr<MergeAlgorithm>> algorithms;
     algorithms.push_back(std::make_unique<TwoWayMergeAlgorithm>());
@@ -37,6 +58,17 @@ int main() {
         auto results = tester.runTests(*alg);
         std::string report = tester.generateReport(results);
         std::cout << report << std::endl;
+
+        if (output == OutputFormat::CsvFile) {
+            std::string filePath = outputDirName;
+            if (filePath.back() != '/' && filePath.back() != '\\') {
+                filePath += '/';
+            }
+
+            filePath += alg->getName() + ".csv";
+
+            tester.generateCSV(filePath, { results });
+        }
     }
 
     return 0;
