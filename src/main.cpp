@@ -9,24 +9,24 @@
 #include "framework/algorithm_tester.hpp"
 #include "framework/two_way_merge.hpp"
 
-enum class ReportOutput {
+enum class OutputFormat {
     Console,
-    Directory
+    CsvFile
 };
 
 int main(int argc, char* argv[]) {
-    ReportOutput output = ReportOutput::Console;
+    OutputFormat output = OutputFormat::Console;
     std::string outputDirName;
 
     for (int i = 1; i < argc; i++) {
         std::string arg = argv[i];
         if (arg == "--csv" && i + 1 < argc) {
             outputDirName = argv[++i];
-            output = ReportOutput::Directory;
+            output = OutputFormat::CsvFile;
         }
     }
 
-    if (output == ReportOutput::Directory) {
+    if (output == OutputFormat::CsvFile) {
         if (!std::filesystem::exists(outputDirName)) {
             std::cerr << "Error: directory doesn't exist " << outputDirName << std::endl;
             return 1;
@@ -59,7 +59,7 @@ int main(int argc, char* argv[]) {
         std::string report = tester.generateReport(results);
         std::cout << report << std::endl;
 
-        if (output == ReportOutput::Directory) {
+        if (output == OutputFormat::CsvFile) {
             std::string filePath = outputDirName;
             if (filePath.back() != '/' && filePath.back() != '\\') {
                 filePath += '/';
