@@ -65,28 +65,12 @@ explicit AlgorithmTester(
                     scenario.blockSizeA, scenario.blockSizeB
                 );
 
-                //std::cout << "\na = {";
-                //for (auto e : test_case.a) std::cout << e << ',';
-                //std::cout << "}\n";
-
-                //std::cout << "\nb = {";
-                //for (auto e : test_case.b) std::cout << e << ',';
-                //std::cout << "}\n";
-
-                //std::cout << "\nright_result = {";
-                //for (auto e : test_case.result) std::cout << e << ',';
-                //std::cout << "}\n";
-
                 CountingInt::resetCounter();
 
                 auto start = std::chrono::high_resolution_clock::now();
                 auto result = algorithm.merge(test_case.a, test_case.b);
                 auto end = std::chrono::high_resolution_clock::now();
                 double elapsed = std::chrono::duration<double, std::milli>(end - start).count();
-
-                //std::cout << "\nalg_result = {";
-                //for (auto e : result) std::cout << e << ',';
-                //std::cout << "}\n";
 
                 total_time += elapsed;
                 total_comparisons += CountingInt::comparisons;
