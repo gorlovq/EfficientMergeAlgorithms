@@ -29,7 +29,7 @@
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/EfficientMergeAlgorithms.git
+   git clone https://github.com/gorlovq/EfficientMergeAlgorithms.git
    cd EfficientMergeAlgorithms
    ```
 
