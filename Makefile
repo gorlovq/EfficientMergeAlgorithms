@@ -63,7 +63,7 @@ venv: $(VENV_DIR)
 
 # Python dependencies setup
 setup: venv
-	$(VENV_PIP) install pandas matplotlib scipy
+	$(VENV_PIP) install -r requirements.txt
 
 # Data generation target
 generate_data: $(BUILD_DIR)/main $(RESULTS_DIR)
