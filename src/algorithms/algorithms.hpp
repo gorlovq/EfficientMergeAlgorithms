@@ -536,9 +536,9 @@ void simple_kim_kutzner_alg(ContainerIter begin, ContainerIter separator, Contai
 
     while (low < high) {
         diff_t t = (low + high) / 2;
-        ContainerIter lIt = std::next(begin, t);
-        ContainerIter rIt = std::prev(n, t + 1);
-        if (!(*rIt < *lIt)) {
+        ContainerIter l = std::next(begin, t);
+        ContainerIter r = std::prev(n, t + 1);
+        if (!(*r < *l)) {
             low = t + 1;
         } else {
             high = t;
@@ -562,6 +562,35 @@ void simple_kim_kutzner_alg(ContainerIter begin, ContainerIter separator, Contai
     }
 }
 
+/*
+ * Algorithm: SymMerge
+ *
+ * Publication:
+ *   Kim P.-S., Kutzner A. Stable Minimum Storage Merging by Symmetric Comparisons //
+ *   Algorithms – ESA 2004: 12th Annual European Symposium on Algorithms, Bergen, Norway, 14–17 September 2004: Proceedings /
+ *   eds. S. Albers, T. Radzik. – Berlin ; Heidelberg : Springer-Verlag, 2004. 
+ *   – (Lecture Notes in Computer Science ; vol. 3221). – p. 714–723. – DOI: 10.1007/978-3-540-30140-0_63.
+ *
+ * Implementation:
+ *   Developer: Igor Stikentzin
+ *
+ * Parameters:
+ *   IterContainer& a - container with a sorted sequence of smaller size.
+ *                      Elements must be in ascending order.
+ *                      IMPORTANT: The container must be accessed starting from its beginning.
+ *
+ *   IterContainer& b - container with a sorted sequence of larger size.
+ *                      Elements must be in ascending order.
+ *                      IMPORTANT: The container must be accessed starting from its beginning.
+ *
+ * Return Value:
+ *   IterContainer - merged container containing all elements from a and b, sorted in ascending order.
+ *
+ * Notes:
+ *   - Containers must support the methods size(), reserve(), begin(), end(), insert().
+ *   - It is assumed that the containers a and b are already sorted before calling the function.
+ *
+ */
 template <typename IterContainer>
 IterContainer simple_kim_kutzner_merge(IterContainer& a, IterContainer& b) {
     auto orig_a_size = a.size();
