@@ -1,4 +1,5 @@
 #include <iostream>
+#include <filesystem>
 #include <vector>
 #include <string>
 #include "framework/generate_sorted_vectors.hpp"
@@ -6,6 +7,7 @@
 #include "framework/hwang_lin_static_merge.hpp"
 #include "framework/hwang_lin_knuth_merge.hpp"
 #include "framework/fractile_insertion_merge.hpp"
+#include "framework/simple_kim_kutzner_merge.hpp"
 #include "framework/algorithm_tester.hpp"
 #include "framework/two_way_merge.hpp"
 
@@ -46,6 +48,7 @@ int main(int argc, char* argv[]) {
     algorithms.push_back(std::make_unique<HwangLinKnuthMergeAlgorithm>());
     algorithms.push_back(std::make_unique<HwangLinStaticMergeAlgorithm>());
     algorithms.push_back(std::make_unique<FractialInsertionMergeAlgorithm>());
+    algorithms.push_back(std::make_unique<SimpleKimKutznerMergeAlgorithm>());
 
     const std::string separator(REPORT_WIDTH, '=');
 

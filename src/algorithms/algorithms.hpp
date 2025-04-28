@@ -496,5 +496,110 @@ IterContainer fractile_insertion_merge(const IterContainer& a, const IterContain
     return r;
 }
 
+// SymMerge Algorithm (On a Simple and Stable Merging Algorithm, Pok-Son Kim, Arne Kutzner)
+template <typename ContainerIter>
+void simple_kim_kutzner_alg(ContainerIter begin, ContainerIter separator, ContainerIter end) {
+    using diff_t = typename std::iterator_traits<ContainerIter>::difference_type;
+    diff_t left_size = std::distance(begin, separator);  // |u|
+    diff_t right_size = std::distance(separator, end);   // |v|
+
+    // trivial case
+    if (left_size == 0 || right_size == 0) return;
+
+    // if |u| or |v| equal 1
+    if (left_size == 1) {
+        ContainerIter it = std::lower_bound(separator, end, *begin);
+        std::rotate(begin, std::next(begin), it);
+        return;
+    }
+    if (right_size == 1) {
+        ContainerIter it = std::upper_bound(begin, separator, *separator);
+        std::rotate(it, separator, std::next(separator));
+        return;
+    }
+
+    // general case
+    diff_t total_size = left_size + right_size;
+    diff_t mid_off = total_size / 2;
+    ContainerIter mid = std::next(begin, mid_off);
+    diff_t n_off = mid_off + left_size;
+    ContainerIter n = std::next(begin, n_off);
+
+    diff_t low, high;
+    if (left_size <= mid_off) {
+        low  = 0;
+        high = left_size;
+    } else {
+        low  = n_off - total_size;
+        high = mid_off;
+    }
+
+    while (low < high) {
+        diff_t t = (low + high) / 2;
+        ContainerIter l = std::next(begin, t);
+        ContainerIter r = std::prev(n, t + 1);
+        if (!(*r < *l)) {
+            low = t + 1;
+        } else {
+            high = t;
+        }
+    }
+
+    diff_t s_off = low;
+    diff_t e_off = n_off - s_off;
+    ContainerIter s = std::next(begin, s_off);
+    ContainerIter e = std::next(begin, e_off);
+
+    if (s_off < left_size && left_size < e_off) {
+        std::rotate(s, separator, e);
+    }
+
+    if (s_off > 0 && s_off < mid_off) {
+        simple_kim_kutzner_alg(begin, s, mid);
+    }
+    if (e_off > mid_off && e_off < total_size) {
+        simple_kim_kutzner_alg(mid, e, end);
+    }
+}
+
+/*
+ * Algorithm: SymMerge
+ *
+ * Publication:
+ *   Kim P.-S., Kutzner A. Stable Minimum Storage Merging by Symmetric Comparisons //
+ *   Algorithms – ESA 2004: 12th Annual European Symposium on Algorithms, Bergen, Norway, 14–17 September 2004: Proceedings /
+ *   eds. S. Albers, T. Radzik. – Berlin ; Heidelberg : Springer-Verlag, 2004. 
+ *   – (Lecture Notes in Computer Science ; vol. 3221). – p. 714–723. – DOI: 10.1007/978-3-540-30140-0_63.
+ *
+ * Implementation:
+ *   Developer: Igor Stikentzin
+ *
+ * Parameters:
+ *   IterContainer& a - container with a sorted sequence of smaller size.
+ *                      Elements must be in ascending order.
+ *                      IMPORTANT: The container must be accessed starting from its beginning.
+ *
+ *   IterContainer& b - container with a sorted sequence of larger size.
+ *                      Elements must be in ascending order.
+ *                      IMPORTANT: The container must be accessed starting from its beginning.
+ *
+ * Return Value:
+ *   IterContainer - merged container containing all elements from a and b, sorted in ascending order.
+ *
+ * Notes:
+ *   - Containers must support the methods size(), reserve(), begin(), end(), insert().
+ *   - It is assumed that the containers a and b are already sorted before calling the function.
+ *
+ */
+template <typename IterContainer>
+IterContainer simple_kim_kutzner_merge(IterContainer& a, IterContainer& b) {
+    auto orig_a_size = a.size();
+    a.insert(a.end(),
+                std::make_move_iterator(b.begin()),
+                std::make_move_iterator(b.end()));
+    b.clear();
+    simple_kim_kutzner_alg(a.begin(), std::next(a.begin(), orig_a_size), a.end());
+    return a;
+}
 
 #endif // ALGORITHMS_H
