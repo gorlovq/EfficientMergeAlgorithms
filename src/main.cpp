@@ -37,10 +37,47 @@ int main(int argc, char* argv[]) {
 
     AlgorithmTester tester;
 
-    tester.addScenario({100, 1000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});
-    tester.addScenario({500, 1000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});
-    tester.addScenario({1000, 1000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});
-    tester.addScenario({1000, 10000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});
+    // ====================================================================
+    // TEST CASES: Comprehensive evaluation of merge algorithms across a wide range of array sizes
+    // Array sizes range from 10^2 to 10^5 for both dimensions
+    // This provides a thorough assessment of algorithm performance across different scale factors
+    // ====================================================================
+
+    // Fixed first array (M=10^2) with varying second array (N) sizes from 10^2 to 10^5
+    tester.addScenario({100, 100, CornerCaseType::RANDOM, 0, 1000000, 5, 5});     // N=10^2
+    tester.addScenario({100, 500, CornerCaseType::RANDOM, 0, 1000000, 5, 5});     // N=5×10^2
+    tester.addScenario({100, 1000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});    // N=10^3
+    tester.addScenario({100, 5000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});    // N=5×10^3
+    tester.addScenario({100, 10000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});   // N=10^4
+    tester.addScenario({100, 50000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});   // N=5×10^4
+    tester.addScenario({100, 100000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});  // N=10^5
+
+    // Fixed first array (M=1000, 10^3) with varying second array (N) sizes from 10^2 to 10^5
+    tester.addScenario({1000, 100, CornerCaseType::RANDOM, 0, 1000000, 5, 5});     // N=10^2
+    tester.addScenario({1000, 500, CornerCaseType::RANDOM, 0, 1000000, 5, 5});     // N=5×10^2
+    tester.addScenario({1000, 1000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});    // N=10^3
+    tester.addScenario({1000, 5000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});    // N=5×10^3
+    tester.addScenario({1000, 10000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});   // N=10^4
+    tester.addScenario({1000, 50000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});   // N=5×10^4
+    tester.addScenario({1000, 100000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});  // N=10^5
+
+    // Fixed first array (M=10000, 10^4) with varying second array (N) sizes from 10^2 to 10^5
+    tester.addScenario({10000, 100, CornerCaseType::RANDOM, 0, 1000000, 5, 5});     // N=10^2
+    tester.addScenario({10000, 500, CornerCaseType::RANDOM, 0, 1000000, 5, 5});     // N=5×10^2
+    tester.addScenario({10000, 1000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});    // N=10^3
+    tester.addScenario({10000, 5000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});    // N=5×10^3
+    tester.addScenario({10000, 10000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});   // N=10^4
+    tester.addScenario({10000, 50000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});   // N=5×10^4
+    tester.addScenario({10000, 100000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});  // N=10^5
+
+    // Fixed first array (M=100000, 10^5) with varying second array (N) sizes from 10^2 to 10^5
+    tester.addScenario({100000, 100, CornerCaseType::RANDOM, 0, 1000000, 5, 5});     // N=10^2
+    tester.addScenario({100000, 500, CornerCaseType::RANDOM, 0, 1000000, 5, 5});     // N=5×10^2
+    tester.addScenario({100000, 1000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});    // N=10^3
+    tester.addScenario({100000, 5000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});    // N=5×10^3
+    tester.addScenario({100000, 10000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});   // N=10^4
+    tester.addScenario({100000, 50000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});   // N=5×10^4
+    tester.addScenario({100000, 100000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});  // N=10^5
 
     std::vector<std::unique_ptr<MergeAlgorithm>> algorithms;
     algorithms.push_back(std::make_unique<TwoWayMergeAlgorithm>());
