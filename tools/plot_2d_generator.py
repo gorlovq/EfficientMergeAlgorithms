@@ -7,11 +7,23 @@ import argparse
 import sys
 from matplotlib.ticker import LogLocator, FuncFormatter, ScalarFormatter
 
+# ====================================================================
+# 2D Plot Generator for Merge Algorithm Comparison
+# ====================================================================
+# This script creates 2D plots comparing merge algorithm performance
+# with a double logarithmic scale (log-log).
+# Axis ranges are configurable via command line parameters.
+# ====================================================================
+
 # Parse command line arguments
 parser = argparse.ArgumentParser(description='Generate 2D comparison plot for merge algorithms')
 parser.add_argument('--m', type=int, default=1000, help='Fixed size of the first array (default: 1000)')
 parser.add_argument('--metric', type=str, choices=['comparisons', 'time'], default='comparisons', 
                     help='Metric to plot: comparisons or execution time (default: comparisons)')
+parser.add_argument('--x-min', type=int, help='Minimum value for X-axis (default: auto-detected)')
+parser.add_argument('--x-max', type=int, help='Maximum value for X-axis (default: auto-detected)')
+parser.add_argument('--y-min', type=float, help='Minimum value for Y-axis (default: auto-detected)')
+parser.add_argument('--y-max', type=float, help='Maximum value for Y-axis (default: auto-detected)')
 args = parser.parse_args()
 
 # Get CSV files and check if they exist
@@ -37,6 +49,7 @@ COLORS = {
     'HwangLinDynamicMerge': '#A5A5A5',  # Gray
     'HwangLinKnuthMerge': '#FFC000',  # Yellow
     'HwangLinStaticMerge': '#5B9BD5',  # Light Blue
+    'SimpleKimKutznerMerge': '#70AD47', # Green
 }
 
 # Initialize data containers
@@ -106,37 +119,55 @@ plot_df = pd.DataFrame({
     'MetricValue': metrics_values
 })
 
-# Set X-axis limits
-max_n = plot_df['SizeN'].max() if not plot_df.empty else 10000
-min_n = plot_df['SizeN'].min() if not plot_df.empty else 1000
+# Determine X-axis range - use command line args if provided, otherwise auto-detect
+if args.x_min is not None:
+    x_min = args.x_min
+else:
+    x_min = plot_df['SizeN'].min() if not plot_df.empty else 100
+    # Round to nearest power of 10 below
+    x_min = 10 ** np.floor(np.log10(x_min))
 
-# Round limits to powers of 10 for log scale
-x_min = 10 ** np.floor(np.log10(min_n))
-x_max = 10 ** np.ceil(np.log10(max_n))
+if args.x_max is not None:
+    x_max = args.x_max
+else:
+    x_max = plot_df['SizeN'].max() if not plot_df.empty else 100000
+    # Round to nearest power of 10 above
+    x_max = 10 ** np.ceil(np.log10(x_max))
 
 # Calculate Y-axis limits based on data
 if not plot_df.empty:
-    y_min = plot_df['MetricValue'].min() * 0.9
-    y_max = plot_df['MetricValue'].max() * 1.1
-    
-    # Handle log scale requirements
-    if y_min <= 0:
-        y_min = plot_df['MetricValue'][plot_df['MetricValue'] > 0].min() * 0.9
-        if np.isnan(y_min):
-            y_min = 0.001
+    # Use command line args if provided, otherwise auto-detect
+    if args.y_min is not None:
+        y_min = args.y_min
+    else:
+        y_min = plot_df['MetricValue'].min() * 0.9
+        # Handle log scale requirements
+        if y_min <= 0:
+            y_min = plot_df['MetricValue'][plot_df['MetricValue'] > 0].min() * 0.9
+            if np.isnan(y_min):
+                y_min = 1  # Default if no valid value found
+        # Round to nearest power of 10 below
+        y_min = 10 ** np.floor(np.log10(y_min))
+        
+    if args.y_max is not None:
+        y_max = args.y_max
+    else:
+        y_max = plot_df['MetricValue'].max() * 1.1
+        # Round to nearest power of 10 above
+        y_max = 10 ** np.ceil(np.log10(y_max))
 else:
     # Default limits if no data
     if METRIC == 'comparisons':
-        y_min, y_max = 1000, 1000000
+        y_min, y_max = 10, 1000000
     else:
-        y_min, y_max = 0.001, 10
+        y_min, y_max = 0.001, 1000
 
-# Round Y limits for log scale
-if y_min > 0:
-    y_min = 10 ** np.floor(np.log10(y_min))
-    y_max = 10 ** np.ceil(np.log10(y_max))
+# Print summary of axis ranges
+print(f"\nAxis ranges:")
+print(f"  X-axis: {x_min} to {x_max}")
+print(f"  Y-axis: {y_min} to {y_max}")
 
-# Print summary
+# Print summary of data
 print("\nData summary for the plot:")
 for algorithm in plot_df['Algorithm'].unique():
     alg_data = plot_df[plot_df['Algorithm'] == algorithm]
@@ -144,11 +175,17 @@ for algorithm in plot_df['Algorithm'].unique():
     print(f"  N values: {sorted(alg_data['SizeN'].unique())}")
     print(f"  {metric_column} values: {sorted(alg_data['MetricValue'].unique())}")
 
+# Set larger font sizes for all text elements
+TITLE_SIZE = 22      # Title font size
+AXIS_LABEL_SIZE = 18 # Axis labels font size
+TICK_LABEL_SIZE = 14 # Tick labels font size
+LEGEND_SIZE = 16     # Legend font size
+
 # Initialize the figure
 fig, ax = plt.subplots(figsize=(16, 10), facecolor='white', dpi=100)
 ax.set_facecolor('white')
 
-# Set up log scales
+# Set up log scales for both axes - Double logarithmic scale
 ax.set_xscale('log')
 ax.set_yscale('log')
 
@@ -156,36 +193,50 @@ ax.set_yscale('log')
 ax.set_xlim(x_min, x_max)
 ax.set_ylim(y_min, y_max)
 
-# Configure log scale ticks
-major_x_ticks = [10**i for i in range(int(np.log10(x_min)), int(np.log10(x_max)) + 1)]
-major_y_ticks = [10**i for i in range(int(np.log10(y_min)), int(np.log10(y_max)) + 1)]
+# Configure log scale ticks based on actual range
+x_powers = range(int(np.log10(x_min)), int(np.log10(x_max)) + 1)
+y_powers = range(int(np.log10(y_min)), int(np.log10(y_max)) + 1)
+
+# Generate major tick positions at powers of 10
+x_ticks = [10**i for i in x_powers]
+y_ticks = [10**i for i in y_powers]
+
+# Add intermediate log ticks on both axes
+x_minor_ticks = []
+for major in x_ticks:
+    for i in range(2, 10):
+        x_minor_ticks.append(major * i)
+y_minor_ticks = []
+for major in y_ticks:
+    for i in range(2, 10):
+        y_minor_ticks.append(major * i)
+
+# Set the ticks
+ax.set_xticks(x_ticks)
+ax.set_yticks(y_ticks)
 
 # Formatter for clean tick labels
-def format_ticks(x, pos):
-    return f'{int(x)}' if x >= 1 else f'{x:.1f}'
-
-ax.xaxis.set_major_locator(LogLocator(base=10.0, numticks=len(major_x_ticks)))
-ax.yaxis.set_major_locator(LogLocator(base=10.0, numticks=len(major_y_ticks)))
+def format_log_ticks(x, pos):
+    if x >= 1000:
+        return f'{int(x/1000)}k' if x % 1000 == 0 else f'{x/1000:.1f}k'
+    else:
+        return f'{int(x)}' if x == int(x) else f'{x:.1f}'
 
 # Apply formatters
-ax.xaxis.set_major_formatter(FuncFormatter(format_ticks))
-ax.yaxis.set_major_formatter(FuncFormatter(format_ticks))
+ax.xaxis.set_major_formatter(FuncFormatter(format_log_ticks))
+ax.yaxis.set_major_formatter(FuncFormatter(format_log_ticks))
 
-# Style the tick labels
-ax.tick_params(axis='both', which='major', labelsize=12)
+# Style the tick labels with larger font size
+ax.tick_params(axis='both', which='major', labelsize=TICK_LABEL_SIZE)
 plt.setp(ax.get_xticklabels(), fontweight='bold')
 plt.setp(ax.get_yticklabels(), fontweight='bold')
 
-# Remove unnecessary ticks
-ax.tick_params(axis='both', which='minor', length=0)
-ax.tick_params(axis='both', which='major', length=0)
-
-# Add grid
+# Add grid for log scale - both major and minor
 ax.grid(True, which='major', color='#CCCCCC', linestyle='-', linewidth=0.8)
-ax.grid(False, which='minor')
+ax.grid(True, which='minor', color='#EEEEEE', linestyle=':', linewidth=0.5)
 
-# Add axis labels
-ax.set_xlabel('РАЗМЕР ВТОРОГО МАССИВА', fontsize=14, labelpad=10)
+# Add axis labels with larger font size
+ax.set_xlabel('РАЗМЕР ВТОРОГО МАССИВА', fontsize=AXIS_LABEL_SIZE, fontweight='bold', labelpad=15)
 
 # Set Y-axis label based on metric
 if METRIC == 'comparisons':
@@ -193,9 +244,9 @@ if METRIC == 'comparisons':
 else:
     y_label = 'ВРЕМЯ ВЫПОЛНЕНИЯ (мс)'
 
-ax.set_ylabel(y_label, fontsize=14, labelpad=10, rotation=90)
+ax.set_ylabel(y_label, fontsize=AXIS_LABEL_SIZE, fontweight='bold', labelpad=15, rotation=90)
 
-# Plot each algorithm
+# Plot each algorithm with thicker lines for better visibility
 for algorithm in plot_df['Algorithm'].unique():
     alg_data = plot_df[plot_df['Algorithm'] == algorithm]
     
@@ -205,25 +256,56 @@ for algorithm in plot_df['Algorithm'].unique():
     # Get color for algorithm
     color = COLORS.get(algorithm, 'black')
     
-    # Create the plot
+    # Create shortened display names for algorithms with long names
+    display_name = algorithm
+    if algorithm == 'SimpleKimKutznerMerge':
+        display_name = 'KimKutznerMerge'
+    elif algorithm == 'FractialInsertionMerge':
+        display_name = 'FractialInsertion'
+    
+    # Create the plot with thicker lines
     ax.plot(alg_data['SizeN'], alg_data['MetricValue'], 
-            label=algorithm, 
+            label=display_name,  # Use shortened name
             color=color,
-            linewidth=2.5,
+            linewidth=3.0,  # Increased line width
             marker='o',
-            markersize=5)
+            markersize=6)   # Increased marker size
 
-# Set title
+# Set title with larger font size
 if METRIC == 'comparisons':
     title = f'Среднее количество сравнений, совершаемых\nразными алгоритмами при размере первого\nмассива m = {FIXED_M}'
 else:
-    title = f'Среднее время выполнения\nразных алгоритмов при размере первого\nмассива m = {FIXED_M}'
+    title = f'Среднее время выполнения\nразных алгоритмами при размере первого\nмассива m = {FIXED_M}'
 
-ax.set_title(title, fontsize=18, pad=20)
+ax.set_title(title, fontsize=TITLE_SIZE, fontweight='bold', pad=20)
 
-# Add legend
-legend = ax.legend(fontsize=14, loc='upper center', bbox_to_anchor=(0.5, -0.15), 
-                 frameon=True, facecolor='white', ncol=5)
+# Create formatter for Y-axis (with scientific notation for large numbers)
+if METRIC == 'comparisons' and y_max > 100000:
+    def sci_format(x, pos):
+        if x >= 1000:
+            return f'{x/1000:.0f}k' if x % 1000 == 0 else f'{x/1000:.1f}k'
+        else:
+            return f'{x:.0f}'
+    ax.yaxis.set_major_formatter(FuncFormatter(sci_format))
+
+# Add legend with larger font size and better spacing
+legend = ax.legend(fontsize=LEGEND_SIZE, 
+                   loc='upper center',
+                   bbox_to_anchor=(0.5, -0.18),  # Lower position
+                   frameon=True, 
+                   facecolor='white', 
+                   ncol=3,  # 3 columns but with better spacing
+                   handlelength=2.5,  # Longer lines in the legend
+                   columnspacing=3.0,  # Much more space between columns
+                   handletextpad=0.8,  # Space between the line and the text
+                   borderpad=1.0)  # Padding inside the legend frame
+
+# Make legend edges more visible
+legend.get_frame().set_linewidth(1.5)
+legend.get_frame().set_edgecolor('black')
+
+# Adjust the figure size to be wider for better legend display
+fig.set_size_inches(18, 10)  # Wider figure
 
 # Style background
 ax.patch.set_facecolor('white')
@@ -233,11 +315,11 @@ fig.patch.set_facecolor('white')
 for spine in ax.spines.values():
     spine.set_visible(True)
     spine.set_color('black')
-    spine.set_linewidth(1.0)
+    spine.set_linewidth(1.5)  # Thicker border
 
 # Adjust layout
 plt.tight_layout()
-plt.subplots_adjust(bottom=0.25, left=0.1, right=0.9)
+plt.subplots_adjust(bottom=0.30, left=0.1, right=0.9)  # Adjusted bottom margin
 
 # Create filename based on metric
 if METRIC == 'comparisons':
@@ -249,4 +331,4 @@ else:
 plt.savefig(f'{plots_dir}/{filename}', dpi=300, bbox_inches='tight', facecolor='white')
 plt.close()
 
-print(f"2D plot of {METRIC} with fixed M={FIXED_M} has been generated with formatting as requested") 
+print(f"2D plot of {METRIC} with fixed M={FIXED_M} has been generated with enlarged axis labels and legend") 
