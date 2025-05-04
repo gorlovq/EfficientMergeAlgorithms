@@ -8,7 +8,7 @@
 class SimpleKimKutznerMergeAlgorithm : public MergeAlgorithm {
 public:
     std::string getName() const override {
-        return "SimpleKimKutznerMergeAlgorithm";
+        return "SimpleKimKutznerMerge";
     }
     std::vector<CountingInt> merge(const std::vector<CountingInt>& a,
                            const std::vector<CountingInt>& b) override {
