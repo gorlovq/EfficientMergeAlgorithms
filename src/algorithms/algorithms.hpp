@@ -15,7 +15,7 @@
  *
  * Publication:
  *   Thanh M., The Design and Analysis of Algorithms For Sort and Merge using Compressions
- *   // Master’s Thesis. – Concordia University, Montreal, Canada. – 1983. – c.35-38.
+ *   // Master's Thesis. – Concordia University, Montreal, Canada. – 1983. – c.35-38.
  *
  * Implementation:
  *   Developers: Sergei Gorlov, Igor Stikentzin
@@ -171,7 +171,7 @@ IterContainer hwang_lin_knuth_merge(const IterContainer& a, const IterContainer&
  *
  * Publication:
  *   Thanh M., The Design and Analysis of Algorithms For Sort and Merge using Compressions
- *   // Master’s Thesis. – Concordia University, Montreal, Canada. – 1983. – c.39-43.
+ *   // Master's Thesis. – Concordia University, Montreal, Canada. – 1983. – c.39-43.
  *
  * Implementation:
  *   Developer: Sergei Gorlov
@@ -197,6 +197,11 @@ template <typename IterContainer>
 IterContainer hwang_lin_static_merge(IterContainer& a, IterContainer& b) {
     int m = static_cast<int>(a.size());
     int n = static_cast<int>(b.size());
+
+    // Swap a and b if a is larger than b
+    if (m > n) {
+        return hwang_lin_static_merge(b, a);
+    }
 
     b.reserve(m + n);
 
@@ -274,6 +279,11 @@ template <typename IterContainer>
 IterContainer hwang_lin_dynamic_merge(IterContainer& a, IterContainer& b) {
     int m = static_cast<int>(a.size());
     int n = static_cast<int>(b.size());
+
+    // Swap a and b if a is larger than b
+    if (m > n) {
+        return hwang_lin_dynamic_merge(b, a);
+    }
 
     size_t i = 0;         // index into A
     size_t j = 0;         // index into B
