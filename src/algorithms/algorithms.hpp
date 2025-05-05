@@ -11,7 +11,7 @@
 #include "common.hpp"
 
 /*
- * Algorithm: Hwang-Lin Static Merge
+ * Algorithm: Two-way Merge
  *
  * Publication:
  *   Thanh M., The Design and Analysis of Algorithms For Sort and Merge using Compressions
