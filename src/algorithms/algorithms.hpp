@@ -195,6 +195,13 @@ IterContainer hwang_lin_knuth_merge(const IterContainer& a, const IterContainer&
  */
 template <typename IterContainer>
 IterContainer hwang_lin_static_merge(IterContainer& a, IterContainer& b) {
+    if (a.empty()) {
+        return b;
+    }
+    if (b.empty()) {
+        return a;
+    }
+
     // Swap a and b if a is larger than b.
     if (a.size() > b.size()) {
         std::swap(a, b);
