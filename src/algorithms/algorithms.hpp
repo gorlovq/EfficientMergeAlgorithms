@@ -11,7 +11,7 @@
 #include "common.hpp"
 
 /*
- * Algorithm: Hwang-Lin Static Merge
+ * Algorithm: Two-way Merge
  *
  * Publication:
  *   Thanh M., The Design and Analysis of Algorithms For Sort and Merge using Compressions
@@ -195,24 +195,31 @@ IterContainer hwang_lin_knuth_merge(const IterContainer& a, const IterContainer&
  */
 template <typename IterContainer>
 IterContainer hwang_lin_static_merge(IterContainer& a, IterContainer& b) {
+    if (a.empty()) {
+        return b;
+    }
+    if (b.empty()) {
+        return a;
+    }
+
+    // Swap a and b if a is larger than b.
+    if (a.size() > b.size()) {
+        std::swap(a, b);
+    }
+
     int m = static_cast<int>(a.size());
     int n = static_cast<int>(b.size());
 
-    // Swap a and b if a is larger than b
-    if (m > n) {
-        return hwang_lin_static_merge(b, a);
-    }
-
-    b.reserve(m + n);
+    // Pre-allocate result to avoid reallocations during merge.
+    IterContainer results(a.size() + b.size());
+    
+    typename IterContainer::iterator r_iter = results.end(); // write-pointer starting from the back.
 
     int t = static_cast<int>(std::floor(std::log2(static_cast<double>(n) / m)));
+    int pow2t = pow2(t);
 
-    // Step 1: check m and for empty.
+    // Main Hwang-Lin Static loop: extract blocks of size 2^t or insert single elements
     while (m != 0 && n != 0) {
-        // Step 2: Calculate t.
-
-        int pow2t = pow2(t);
-
         if (n < pow2t) {
             break;
         }
@@ -220,33 +227,55 @@ IterContainer hwang_lin_static_merge(IterContainer& a, IterContainer& b) {
         int k = n - pow2t;
         if (k < 0) k = 0;
 
-        auto a_m = a[m - 1];
-
-        // Step 3: Compare A[m] with B[n - 2^t + 1]
-        if (a_m < b[k]) {
+        // Case 1: entire block from b is greater than lastA.
+        if (a[m - 1] < b[k]) {
+            // Copy the block [k, n) from b into the result
+            r_iter -= pow2t;
+            std::copy(b.begin() + k, b.begin() + n, r_iter);
             n -= pow2t;
             continue;
-        }else {
-            // Step 5: Insert A[m] into B[n - 2^t + 2 : n]
-            auto pos = std::upper_bound(b.begin() + k + 1, b.begin() + n, a_m);
-            b.insert(pos, a_m);
+        } else {
+            // Case 2: need to insert lastA into the correct position within the block
+            auto pos = std::upper_bound(
+                b.begin() + k + 1, 
+                b.begin() + n, 
+                a[m - 1]
+            );
 
-            int q = static_cast<int>(std::distance(b.begin(), pos));
+            // Copy the tail of b from pos to n
+            r_iter -= static_cast<int>(std::distance(pos, b.begin() + n));
+            std::copy(pos, b.begin() + n, r_iter);
+            
+            // Insert lastA right before the copied tail
+            --r_iter;
+            *r_iter = a[m - 1];   
 
-            n = q;
+            n = static_cast<int>(std::distance(b.begin(), pos));
             m--;
         }
     }
 
+    // Final merge for remaining elements in a and b, writing from back to front.
+    auto a_it = a.begin() + m;
+    auto b_it = b.begin() + n;
 
-    // Step 6: Insert elements of A into B using binary insertion
-    for (int i = 0; i < m; ++i) {
-        binary_insertion(b, a[i]);
+    // Merge tail segments in reverse order.
+    while (a_it != a.begin() && b_it != b.begin()) {
+        *--r_iter = (*std::prev(a_it) >= *std::prev(b_it))
+            ? *--a_it
+            : *--b_it;
     }
 
-    return b;
-}
+    // Copy any leftovers from a or b
+    while (a_it != a.begin()) {
+        *--r_iter = *--a_it;
+    }
+    while (b_it != b.begin()) {
+        *--r_iter = *--b_it;
+    }
 
+    return results;
+}
 
 /*
  * Algorithm: Hwang-Lin Dynamic Merge
