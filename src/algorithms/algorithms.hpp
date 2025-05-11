@@ -278,6 +278,39 @@ IterContainer hwang_lin_static_merge(IterContainer& a, IterContainer& b) {
 }
 
 
+/*
+ * Algorithm: Hwang–Lin Static Stable Merge
+ *
+ * Origin:
+ *   Based on:
+ *     Thanh M., The Design and Analysis of Algorithms For Sort and Merge using Compressions
+ *     // Master's Thesis. – Concordia University, Montreal, Canada. – 1983. – pp.39–43.
+ *   Enhancements:
+ *     This implementation extends the original static merge to guarantee stability—
+ *     i.e. when a[i] == b[j], elements from `a` always precede those from `b`.
+ *
+ * Implementation:
+ *   Developer: Sergei Gorlov
+ *
+ * Parameters:
+ *   IterContainer& a - container with a sorted sequence of smaller size.
+ *                      Elements must be in ascending order.
+ *                      IMPORTANT: The container must be accessed starting from its beginning.
+ *
+ *   IterContainer& b - container with a sorted sequence of larger size.
+ *                      Elements must be in ascending order.
+ *                      IMPORTANT: The container must be accessed starting from its beginning.
+ *
+ * Returns:
+ *   IterContainer – new container of size a.size()+b.size(), sorted ascending,
+ *                    with stable ordering: if a[i] == b[j], all from `a` come first.
+ *
+ * Notes:
+ *   - Both inputs must be pre-sorted in non-decreasing order.
+ *   - Stability is guaranteed even when input sizes vary.
+ *   - The result is written from back to front to avoid extra memory moves.
+ */
+
 template <typename IterContainer>
 IterContainer hwang_lin_static_stable_merge(IterContainer& a, IterContainer& b) {
     // Return the other container if one is empty.
