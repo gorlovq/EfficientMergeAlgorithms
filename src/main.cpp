@@ -5,6 +5,7 @@
 #include "framework/generate_sorted_vectors.hpp"
 #include "framework/hwang_lin_dynamic_merge.hpp"
 #include "framework/hwang_lin_static_merge.hpp"
+#include "framework/hwang_lin_static_stable_merge.hpp"
 #include "framework/hwang_lin_knuth_merge.hpp"
 #include "framework/fractile_insertion_merge.hpp"
 #include "framework/simple_kim_kutzner_merge.hpp"
@@ -84,6 +85,7 @@ int main(int argc, char* argv[]) {
     algorithms.push_back(std::make_unique<HwangLinDynamicMergeAlgorithm>());
     algorithms.push_back(std::make_unique<HwangLinKnuthMergeAlgorithm>());
     algorithms.push_back(std::make_unique<HwangLinStaticMergeAlgorithm>());
+    algorithms.push_back(std::make_unique<HwangLinStaticStableMergeAlgorithm>());
     algorithms.push_back(std::make_unique<FractialInsertionMergeAlgorithm>());
     algorithms.push_back(std::make_unique<SimpleKimKutznerMergeAlgorithm>());
 
