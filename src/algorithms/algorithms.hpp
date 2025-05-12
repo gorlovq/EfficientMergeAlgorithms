@@ -277,6 +277,177 @@ IterContainer hwang_lin_static_merge(IterContainer& a, IterContainer& b) {
     return results;
 }
 
+
+/*
+ * Algorithm: Hwang–Lin Static Stable Merge
+ *
+ * Origin:
+ *   Based on:
+ *     Thanh M., The Design and Analysis of Algorithms For Sort and Merge using Compressions
+ *     // Master's Thesis. – Concordia University, Montreal, Canada. – 1983. – pp.39–43.
+ *   Enhancements:
+ *     This implementation extends the original static merge to guarantee stability—
+ *     i.e. when a[i] == b[j], elements from `a` always precede those from `b`.
+ *
+ * Implementation:
+ *   Developer: Sergei Gorlov
+ *
+ * Parameters:
+ *   IterContainer& a - container with a sorted sequence of smaller size.
+ *                      Elements must be in ascending order.
+ *                      IMPORTANT: The container must be accessed starting from its beginning.
+ *
+ *   IterContainer& b - container with a sorted sequence of larger size.
+ *                      Elements must be in ascending order.
+ *                      IMPORTANT: The container must be accessed starting from its beginning.
+ *
+ * Returns:
+ *   IterContainer – new container of size a.size()+b.size(), sorted ascending,
+ *                    with stable ordering: if a[i] == b[j], all from `a` come first.
+ *
+ * Notes:
+ *   - Both inputs must be pre-sorted in non-decreasing order.
+ *   - Stability is guaranteed even when input sizes vary.
+ *   - The result is written from back to front to avoid extra memory moves.
+ */
+
+template <typename IterContainer>
+IterContainer hwang_lin_static_stable_merge(IterContainer& a, IterContainer& b) {
+    // Return the other container if one is empty.
+    if (a.empty()) {
+        return b;
+    }
+    if (b.empty()) {
+        return a;
+    } 
+
+    // Record sizes of both input ranges.
+    int m = static_cast<int>(a.size());
+    int n = static_cast<int>(b.size());
+
+    // Allocate output of combined size to avoid reallocations.
+    IterContainer result(a.size() + b.size());
+    
+    // Initialize write iterator at the end of the output.
+    auto r_iter = result.end();
+
+
+    // Choose branch based on which input is larger.
+    if (b.size() >= a.size()) {
+        // Compute block size parameter t and block length 2^t.
+        int t = static_cast<int>(std::floor(std::log2(static_cast<double>(n) / m)));
+        int pow2t = pow2(t);
+
+        // Main Hwang–Lin static merge loop.
+        while (m != 0 && n != 0) {
+            // If remaining b-block is smaller than pow2t, exit loop.
+            if (n < pow2t) {
+                break;
+            }
+
+            // Determine block start in b.
+            int k = n - pow2t;
+            if (k < 0) k = 0;
+
+            // Case 1: block in b is strictly larger than last element of a.
+            if (a[m - 1] <= b[k]) {
+                // Copy entire block from b[k..n) to output.
+                r_iter -= pow2t;
+                std::copy(b.begin() + k, b.begin() + n, r_iter);
+                n -= pow2t;
+                continue;
+            } else {
+                // Case 2: insert last element of a into b before first larger element.
+                auto pos = std::lower_bound(
+                    b.begin() + k + 1, 
+                    b.begin() + n, 
+                    a[m - 1]
+                );
+
+                // Copy tail of b from pos..n to output.
+                int tailSize = static_cast<int>(std::distance(pos, b.begin() + n));
+                r_iter -= tailSize;
+                std::copy(pos, b.begin() + n, r_iter);
+                
+                // Place a[m-1] immediately before the copied tail.
+                *(--r_iter) = a[m - 1];
+
+                // Update counts for next iteration.
+                n = static_cast<int>(std::distance(b.begin(), pos));
+                m--;
+            }
+        }
+    }else{
+        // Compute block size parameter t and block length 2^t.
+        int t = static_cast<int>(std::floor(std::log2(static_cast<double>(m) / n)));
+        int pow2t = pow2(t);
+
+        // Main Hwang–Lin static merge loop (mirror case).
+        while (m != 0 && n != 0) {
+            // If remaining a-block is smaller than pow2t, exit loop.
+            if (m < pow2t) {
+                break;
+            }
+
+            // Determine block start in a.
+            int k = m - pow2t;
+            if (k < 0) k = 0;
+
+            // Case 1: block in a is strictly larger than last element of b.
+            if (b[n - 1] < a[k]) {
+                // Copy entire block from a[k..m) to output.
+                r_iter -= pow2t;
+                std::copy(a.begin() + k, a.begin() + m, r_iter);
+                m -= pow2t;
+                continue;
+            } else {
+                // Case 2: insert last element of b into a before first larger element.
+                auto pos = std::upper_bound(
+                    a.begin() + k + 1, 
+                    a.begin() + m, 
+                    b[n - 1]
+                );
+
+                // Copy tail of a from pos..m to output.
+                int tailSize = static_cast<int>(std::distance(pos, a.begin() + m));
+                r_iter -= tailSize;
+                std::copy(pos, a.begin() + m, r_iter);
+                
+                // Place b[n-1] immediately before the copied tail.
+                *(--r_iter) = b[n - 1];
+
+                // Update counts for next iteration.
+                m = static_cast<int>(std::distance(a.begin(), pos));
+                n--;
+            }
+        }
+    }
+
+
+    // Perform final reverse merge of remaining elements.
+    auto a_it = a.begin() + m;
+    auto b_it = b.begin() + n;
+
+    // Merge tail segments in reverse order.
+    while (a_it != a.begin() && b_it != b.begin()) {
+        *--r_iter = (*std::prev(a_it) > *std::prev(b_it))
+            ? *--a_it
+            : *--b_it;
+    }
+
+    // Copy any leftovers from b.
+    while (b_it != b.begin()) {
+        *--r_iter = *--b_it;
+    }
+    // Copy any leftovers from a.
+    while (a_it != a.begin()) {
+        *--r_iter = *--a_it;
+    }
+
+    return result;
+}
+
+
 /*
  * Algorithm: Hwang-Lin Dynamic Merge
  *
