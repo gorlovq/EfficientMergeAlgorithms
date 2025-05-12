@@ -43,11 +43,10 @@ for csv_file in csv_files:
         # Create logarithmic grid for interpolation
         base_x = np.logspace(np.log10(x_min), np.log10(x_max), 50)
         base_y = np.logspace(np.log10(y_min), np.log10(y_max), 50)
-        # объединяем и сортируем, чтобы в узлах сетки были и оригинальные точки
         xi = np.sort(np.unique(np.concatenate([base_x, x])))
         yi = np.sort(np.unique(np.concatenate([base_y, y])))
         X, Y = np.meshgrid(xi, yi)
-        # ==== Заменили RBF на B-spline 2-го порядка ====
+
         spline = SmoothBivariateSpline(x, y, z, kx=2, ky=2, s=0)
         Z = spline.ev(X.ravel(), Y.ravel()).reshape(X.shape)
         
