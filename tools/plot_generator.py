@@ -4,7 +4,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import os
 import glob
-from scipy.interpolate import griddata, Rbf
+from scipy.interpolate import SmoothBivariateSpline
 
 # Get CSV files and create output directory
 csv_files = glob.glob('results/*.csv')
@@ -41,33 +41,36 @@ for csv_file in csv_files:
         y_min, y_max = np.min(y), np.max(y)
         
         # Create logarithmic grid for interpolation
-        xi = np.logspace(np.log10(x_min), np.log10(x_max), 50)
-        yi = np.logspace(np.log10(y_min), np.log10(y_max), 50)
-        
+        base_x = np.logspace(np.log10(x_min), np.log10(x_max), 50)
+        base_y = np.logspace(np.log10(y_min), np.log10(y_max), 50)
+        # объединяем и сортируем, чтобы в узлах сетки были и оригинальные точки
+        xi = np.sort(np.unique(np.concatenate([base_x, x])))
+        yi = np.sort(np.unique(np.concatenate([base_y, y])))
         X, Y = np.meshgrid(xi, yi)
-        
-        # Use RBF interpolation for sparse data
-        rbf = Rbf(x, y, z, function='multiquadric')
-        Z = rbf(X, Y)
+        # ==== Заменили RBF на B-spline 2-го порядка ====
+        spline = SmoothBivariateSpline(x, y, z, kx=2, ky=2, s=0)
+        Z = spline.ev(X.ravel(), Y.ravel()).reshape(X.shape)
         
         # Create mask to hide areas far from data points
         mask = np.ones_like(Z, dtype=bool)
+        max_dist = 0.5 * max(x_max - x_min, y_max - y_min)
         for i in range(X.shape[0]):
             for j in range(X.shape[1]):
-                min_dist = np.min(np.sqrt((X[i,j] - x)**2 + (Y[i,j] - y)**2))
-                if min_dist > 0.5 * max(x_max - x_min, y_max - y_min):
+                d = np.sqrt((X[i,j] - x)**2 + (Y[i,j] - y)**2)
+                if np.min(d) > max_dist:
                     mask[i,j] = False
-        
         Z_masked = np.where(mask, Z, np.nan)
         
         # Plot 3D surface
-        surf = ax.plot_surface(X, Y, Z_masked, 
-                           cmap='viridis',
-                           rstride=1, 
-                           cstride=1,
-                           linewidth=0,
-                           antialiased=True,
-                           alpha=0.9)
+        surf = ax.plot_surface(
+            X, Y, Z_masked,
+            cmap='viridis',
+            rstride=1,
+            cstride=1,
+            linewidth=0,
+            antialiased=True,
+            alpha=0.9
+        )
         
         # Add scatter points for actual data
         ax.scatter(x, y, z, color='red', s=50, alpha=0.7)
@@ -87,7 +90,6 @@ for csv_file in csv_files:
     
     # Set view angle
     ax.view_init(elev=20, azim=200)
-    
     ax.grid(True)
     
     # Save plot
