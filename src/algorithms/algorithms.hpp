@@ -1,14 +1,11 @@
-#ifndef ALGORITHMS_H
-#define ALGORITHMS_H
+#pragma once
 
-#include <algorithm>
-#include <vector>
-#include <list>
+#include <iterator>
 #include <array>
 #include <cmath>
-#include <functional>
 
 #include "common.hpp"
+
 
 /*
  * Algorithm: Two-way Merge
@@ -105,65 +102,68 @@ void binary_insertion(IterContainer& arr, const T& elem) {
  *
  */
 template <typename IterContainer>
+requires std::random_access_iterator<typename IterContainer::const_iterator>
 IterContainer hwang_lin_knuth_merge(const IterContainer& a, const IterContainer& b) {
-    auto [a_left, a_right, b_left, b_right] = std::array<typename IterContainer::const_iterator, 4>{{a.begin(), a.end(), b.begin(), b.end()}};
-    IterContainer r(a.size() + b.size()); // Resulting vector
+    using size_t  = typename IterContainer::size_type;
+    using iter    = typename IterContainer::const_iterator;
+    using value_t = typename IterContainer::value_type;
 
-    typename IterContainer::iterator k_iter = r.end(); // Pointer for insertion
+    iter a_left  = a.begin(), a_right = a.end();
+    iter b_left  = b.begin(), b_right = b.end();
+    size_t m = a.size();
+    size_t n = b.size();
 
-    auto [m, n, t, s] = std::array<int, 4>{{0, 0, 0, 0}};
+    if (!m) return b;
+    if (!n) return a;
 
-    while (a_left != a_right && b_left != b_right) {
+    IterContainer out(m + n);
+    auto k = out.end();
+
+    while (m && n)
+    {
         // H1
-        m = static_cast<int>(std::distance(a_left, a_right));
-        n = static_cast<int>(std::distance(b_left, b_right));
         if (m > n) {
-            t = std::floor(std::log2(m / n));
-            s = pow2(t);
-
-            // H4
-            if (*(b_right - 1) < *(a_right - s)) {
-                k_iter -= s;
-                std::copy(a_right - s, a_right, k_iter); // copy elements from (a_right - s) to a_right to result vector
-                a_right -= s;
-                continue;
-            }
-        }
-        else {
-            t = std::floor(std::log2(n / m));
-            s = pow2(t);
-
-            // H2
-            if (*(a_right - 1) < *(b_right - s)) {
-                k_iter -= s;
-                std::copy(b_right - s, b_right, k_iter); // copy elements from (b_right - s) to b_right to result vector
-                b_right -= s;
-                continue;
-            }
+            std::swap(a_left,  b_left);
+            std::swap(a_right, b_right);
+            std::swap(m, n);
         }
 
-        // H3
-        if (*(b_right - 1) < *(a_right - 1)) {
-            *(--k_iter) = *(a_right - 1);
-            a_right--;
-            continue;
+        size_t s = bit_floor(n / m);
+
+        // H2 / H4
+        if (*(a_right - 1) < *(b_right - s)) {
+            k -= s;
+            std::copy(b_right - s, b_right, k);
+            b_right -= s;  n -= s;
+            continue; // back to H1
         }
 
-        // H5
-        if (*(a_right - 1) <= *(b_right - 1)) {
-            *(--k_iter) = *(b_right - 1);
-            b_right--;
-            continue;
+        // H3 / H5
+        value_t a_last = *(a_right - 1);
+
+        iter pos;
+        if (s <= 8) {
+            pos = b_right;
+            do { --pos; } while (a_last < *pos);
+            ++pos;
+        } else {
+            pos = std::upper_bound(b_right - s, b_right, a_last);
         }
+
+        size_t tail = static_cast<size_t>(b_right - pos);
+        k -= tail + 1;
+        std::copy(pos, b_right, k + 1);
+        *k = a_last;
+
+        b_right = pos;
+        n -= tail;
+        --a_right; --m;
     }
 
-    if (a_left == a_right) {
-        std::copy(b_left, b_right, r.begin());
-    } else {
-        std::copy(a_left, a_right, r.begin());
-    }
+    if (m)  std::copy(a_left, a_right, k - m);
+    else    std::copy(b_left, b_right, k - n);
 
-    return r;
+    return out;
 }
 
 /*
@@ -811,5 +811,3 @@ IterContainer simple_kim_kutzner_merge(IterContainer& a, IterContainer& b) {
     simple_kim_kutzner_alg(a.begin(), std::next(a.begin(), orig_a_size), a.end());
     return a;
 }
-
-#endif // ALGORITHMS_H
