@@ -1,3 +1,8 @@
+/*
+ * Author: Sergei Gorlov.
+ * Description: Declares the HwangLinDynamicMergeAlgorithm class.
+ */
+
 #ifndef HWANG_LIN_DYNAMIC_MERGE_HPP
 #define HWANG_LIN_DYNAMIC_MERGE_HPP
 

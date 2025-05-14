@@ -1,3 +1,8 @@
+/*
+ * Author: Sergei Gorlov.
+ * Description:
+ */
+
 #ifndef MERGE_ALGORITHM_HPP
 #define MERGE_ALGORITHM_HPP
 

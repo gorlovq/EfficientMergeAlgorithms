@@ -1,3 +1,8 @@
+/*
+ * Author: Igor Stikentzin.
+ * Description: Declares the HwangLinKnuthMergeAlgorithm class.
+ */
+
 #ifndef HWANG_LIN_KNUTH_MERGE_HPP
 #define HWANG_LIN_KNUTH_MERGE_HPP
 

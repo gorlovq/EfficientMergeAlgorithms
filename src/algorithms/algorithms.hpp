@@ -1,3 +1,8 @@
+/*
+ * Authors: Sergei Gorlov and Igor Stikentzin.
+ * Description: Implements a collection of efficient merge algorithms,
+ */
+
 #pragma once
 
 #include <iterator>

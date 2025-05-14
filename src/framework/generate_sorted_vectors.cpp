@@ -1,3 +1,8 @@
+/*
+ * Author: Sergei Gorlov.
+ * Description:
+ */
+
 #include "generate_sorted_vectors.hpp"
 #include <algorithm>
 #include <ctime>

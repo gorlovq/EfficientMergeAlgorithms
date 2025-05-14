@@ -1,3 +1,8 @@
+/*
+ * Author: Sergei Gorlov.
+ * Description:
+ */
+
 // test_config.hpp
 #ifndef TEST_CONFIG_HPP
 #define TEST_CONFIG_HPP

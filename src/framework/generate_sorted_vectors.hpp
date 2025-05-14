@@ -1,3 +1,8 @@
+/*
+ * Author: Sergei Gorlov.
+ * Description:
+ */
+
 #ifndef FRAMEWORK_H
 #define FRAMEWORK_H
 

@@ -1,3 +1,8 @@
+"""
+Author: Sergei Gorlov.
+Description: Generates 3D plots from CSV results to visualize the number of comparisons and execution time for merge algorithms.
+"""
+
 import pandas as pd
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D

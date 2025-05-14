@@ -1,3 +1,8 @@
+/*
+ * Author: Sergei Gorlov.
+ * Description: Declares the HwangLinStaticStableMergeAlgorithm class.
+ */
+
 #ifndef HWANG_LIN_STATIC_STABLE_MERGE_HPP
 #define HWANG_LIN_STATIC_STABLE_MERGE_HPP
 

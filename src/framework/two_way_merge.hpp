@@ -1,3 +1,8 @@
+/*
+ * Authors: Sergei Gorlov and Igor Stikentzin.
+ * Description:
+ */
+
 #ifndef TWO_WAY_MERGE_HPP
 #define TWO_WAY_MERGE_HPP
 

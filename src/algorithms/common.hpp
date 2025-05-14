@@ -1,3 +1,8 @@
+/*
+ * Author: Igor Stikentzin. 
+ * Description: Common utilities and definitions for efficient merge algorithms.
+ */
+
 #pragma once
 
 #include <bit>
