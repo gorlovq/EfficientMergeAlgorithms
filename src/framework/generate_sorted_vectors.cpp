@@ -1,6 +1,6 @@
 /*
  * Author: Sergei Gorlov.
- * Description:
+ * Description: Implements functions to generate sorted test vectors and their expected merge results.
  */
 
 #include "generate_sorted_vectors.hpp"

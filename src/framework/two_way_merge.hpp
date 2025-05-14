@@ -1,6 +1,6 @@
 /*
  * Authors: Sergei Gorlov and Igor Stikentzin.
- * Description:
+ * Description: Declares the TwoWayMergeAlgorithm class.
  */
 
 #ifndef TWO_WAY_MERGE_HPP

@@ -1,6 +1,6 @@
 /*
  * Author: Sergei Gorlov.
- * Description:
+ * Description: Defines data structures for configuring test scenarios.
  */
 
 // test_config.hpp

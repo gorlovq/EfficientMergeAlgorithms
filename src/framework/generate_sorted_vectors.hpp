@@ -1,6 +1,6 @@
 /*
  * Author: Sergei Gorlov.
- * Description:
+ * Description: Defines corner case types and provides functions to generate sorted test vectors.
  */
 
 #ifndef FRAMEWORK_H
