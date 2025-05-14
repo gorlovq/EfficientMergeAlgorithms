@@ -1,3 +1,8 @@
+"""
+Author: Sergei Gorlov.
+Description: Generates 2D plots from CSV results to visualize the number of comparisons and execution time for merge algorithms.
+"""
+
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np

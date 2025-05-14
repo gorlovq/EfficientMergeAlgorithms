@@ -1,3 +1,8 @@
+/*
+ * Author: Sergei Gorlov.
+ * Description: Declares the abstract MergeAlgorithm class, which defines the interface for merge algorithm implementations.
+ */
+
 #ifndef MERGE_ALGORITHM_HPP
 #define MERGE_ALGORITHM_HPP
 

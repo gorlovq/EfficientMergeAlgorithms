@@ -1,3 +1,8 @@
+/*
+ * Author: Igor Stikentzin.
+ * Description: Declares the SimpleKimKutznerMergeAlgorithm class.
+ */
+
 #ifndef SIMPLE_KIM_KUTZNER_MERGE_HPP
 #define SIMPLE_KIM_KUTZNER_MERGE_HPP
 

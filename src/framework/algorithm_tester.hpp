@@ -1,3 +1,8 @@
+/*
+ * Author: Sergei Gorlov. 
+ * Description: Provides the AlgorithmTester class for running, evaluating, and reporting the results of merge algorithm test scenarios.
+ */
+
 #ifndef ALGORITHM_TESTER_HPP
 #define ALGORITHM_TESTER_HPP
 

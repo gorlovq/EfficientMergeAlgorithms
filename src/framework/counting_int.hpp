@@ -1,3 +1,8 @@
+/*
+ * Authors: Sergei Gorlov and Igor Stikentzin.
+ * Description: Declares the FractialInsertionMergeAlgorithm class.
+ */
+
 #ifndef COUNTING_INT_HPP
 #define COUNTING_INT_HPP
 
@@ -51,7 +56,7 @@ inline bool operator>=(const CountingInt& lhs, const CountingInt& rhs) {
     return lhs.value >= rhs.value;
 }
 
-inline std::ostream& operator<<(std::ostream& os, const CountingInt& x) { // вывод значения через стандартный поток
+inline std::ostream& operator<<(std::ostream& os, const CountingInt& x) {
     return os << x.value;
 }
 

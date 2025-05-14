@@ -1,3 +1,8 @@
+/*
+ * Author: Igor Stikentzin.
+ * Description: Declares the FractialInsertionMergeAlgorithm class.
+ */
+
 #ifndef FRACTIAL_INSERTION_MERGE_HPP
 #define FRACTIAL_INSERTION_MERGE_HPP
 
