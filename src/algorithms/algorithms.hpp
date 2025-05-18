@@ -597,7 +597,11 @@ IterContainer hwang_lin_dynamic_merge(IterContainer& a, IterContainer& b) {
 
     // Merge remaining elements from both arrays.
     while (a_it != a.end() && b_it != b.end()) {
-        *r_iter++ = (*a_it < *b_it) ? *a_it++ : *b_it++;
+        if (*a_it <= *b_it) {
+            *r_iter++ = *a_it++;
+        } else {
+            *r_iter++ = *b_it++;
+        }
     }
 
     // Copy any remaining elements from a.
@@ -753,7 +757,7 @@ IterContainer hwang_lin_dynamic_stable_merge(IterContainer& a, IterContainer& b)
             auto b4 = b[j + 3];
 
             // NODE A: Handle case where first element of a is greater than entire block in b.
-            if ((i + c1 - 1) < m && b1 > a[i + c1 - 1]) {
+            if ((i + c1 - 1) < m && b1 >= a[i + c1 - 1]) {
                 std::copy(a.begin() + i, a.begin() + i + c1, r_iter);
                 r_iter += c1;
                 i += c1;
@@ -761,7 +765,7 @@ IterContainer hwang_lin_dynamic_stable_merge(IterContainer& a, IterContainer& b)
             }
 
             // NODE B: Handle case where second element of a is greater than block in b.
-            if ((i + c2 - 1) < m && b2 > a[i + c2 - 1]) {
+            if ((i + c2 - 1) < m && b2 >= a[i + c2 - 1]) {
                 auto pos1 = insert_and_copy_upper_bound<IterContainer>(a.begin() + i, a.begin() + i + c1, r_iter, b1);
                 std::copy(pos1, a.begin() + i + c2, r_iter);
                 r_iter += std::distance(pos1, a.begin() + i + c2);
@@ -771,7 +775,7 @@ IterContainer hwang_lin_dynamic_stable_merge(IterContainer& a, IterContainer& b)
             }
 
             // NODE C: Handle case where third element of a is greater than block in b.
-            if ((i + c3 - 1) < m && b3 > a[i + c3 - 1]) {
+            if ((i + c3 - 1) < m && b3 >= a[i + c3 - 1]) {
                 auto pos1 = insert_and_copy_upper_bound<IterContainer>(a.begin() + i, a.begin() + i + c2, r_iter, b1);
                 auto pos2 = insert_and_copy_upper_bound<IterContainer>(pos1, a.begin() + i + c2 + 1, r_iter, b2);
                 std::copy(pos2, a.begin() + i + c3, r_iter);
@@ -782,7 +786,7 @@ IterContainer hwang_lin_dynamic_stable_merge(IterContainer& a, IterContainer& b)
             }
 
             // NODE D: Handle case where fourth element of a is greater than block in b.
-            if ((i + c4 - 1) < m && b4 > a[i + c4 - 1]) {            
+            if ((i + c4 - 1) < m && b4 >= a[i + c4 - 1]) {            
                 auto pos1 = insert_and_copy_upper_bound<IterContainer>(a.begin() + i, a.begin() + i + c3, r_iter, b1);
                 auto pos2 = insert_and_copy_upper_bound<IterContainer>(pos1, a.begin() + i + c3, r_iter, b2);
                 auto pos3 = insert_and_copy_upper_bound<IterContainer>(pos2, a.begin() + i + c3, r_iter, b3);
