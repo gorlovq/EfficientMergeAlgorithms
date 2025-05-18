@@ -315,7 +315,6 @@ IterContainer hwang_lin_static_merge(IterContainer& a, IterContainer& b) {
  *   - Stability is guaranteed even when input sizes vary.
  *   - The result is written from back to front to avoid extra memory moves.
  */
-
 template <typename IterContainer>
 IterContainer hwang_lin_static_stable_merge(IterContainer& a, IterContainer& b) {
     // Return the other container if one is empty.
@@ -618,6 +617,39 @@ IterContainer hwang_lin_dynamic_merge(IterContainer& a, IterContainer& b) {
 }
 
 
+/*
+ * Algorithm: Hwang-Lin Dynamic Stable Merge
+ *
+ * Origin:
+ *   Based on:
+ *     Thanh M. and Bui T. D., An Improvement of The Binary Merge Algorithm
+ *     // Concordia University, Montreal, Canada. – 1982. – с.455-462
+ *   Enhancements:
+ *     This implementation extends the original dynamic merge to guarantee stability—
+ *     i.e. when a[i] == b[j], elements from `a` always precede those from `b`.
+ *
+ *
+ * Implementation:
+ *   Developer: Sergei Gorlov
+ *
+ * Parameters:
+ *   IterContainer& a - container with a sorted sequence of smaller size.
+ *                      Elements must be in ascending order.
+ *                      IMPORTANT: The container must be accessed starting from its beginning.
+ *
+ *   IterContainer& b - container with a sorted sequence of larger size.
+ *                      Elements must be in ascending order.
+ *                      IMPORTANT: The container must be accessed starting from its beginning.
+ *
+ * Returns:
+ *   IterContainer – new container of size a.size()+b.size(), sorted ascending,
+ *                    with stable ordering: if a[i] == b[j], all from `a` come first.
+ *
+ * Notes:
+ *   - Containers must support the methods size(), reserve(), begin(), end(), insert().
+ *   - It is assumed that the containers a and b are already sorted before calling the function.
+ *
+ */
 template <typename IterContainer>
 IterContainer hwang_lin_dynamic_stable_merge(IterContainer& a, IterContainer& b) {
     // Return the other container if one is empty.
