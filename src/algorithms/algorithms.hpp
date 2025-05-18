@@ -482,6 +482,13 @@ IterContainer hwang_lin_static_stable_merge(IterContainer& a, IterContainer& b) 
  */
 template <typename IterContainer>
 IterContainer hwang_lin_dynamic_merge(IterContainer& a, IterContainer& b) {
+    if (a.empty()) {
+        return b;
+    }
+    if (b.empty()) {
+        return a;
+    }
+    
     int m = static_cast<int>(a.size());
     int n = static_cast<int>(b.size());
 
@@ -673,36 +680,36 @@ IterContainer hwang_lin_dynamic_merge(IterContainer& a, IterContainer& b) {
         // Insert a4
         *r_iter++ = a4;
         
-        // Copy remaining elements from b
-        std::copy(pos4, b.begin() + j, r_iter);
-        r_iter += std::distance(pos4, b.begin() + j);
-        
         i += 4;
         j += std::distance(b.begin() + j, pos4);
     }
 
-    // Handle remaining elements from a
-    while (i < m) {
-        auto pos = std::upper_bound(b.begin() + j, b.end(), a[i]);
-        
-        // Copy elements from b before a[i]
-        std::copy(b.begin() + j, pos, r_iter);
-        r_iter += std::distance(b.begin() + j, pos);
-        
-        // Insert a[i]
-        *r_iter++ = a[i];
-        
-        j = std::distance(b.begin(), pos);
-        i++;
+    // Merge remaining elements
+    auto a_it = a.begin() + i;
+    auto b_it = b.begin() + j;
+
+    // Merge remaining elements from both arrays
+    while (a_it != a.end() && b_it != b.end()) {
+        if (*a_it <= *b_it) {
+            *r_iter++ = *a_it++;
+        } else {
+            *r_iter++ = *b_it++;
+        }
+    }
+
+    // Copy any remaining elements from a
+    while (a_it != a.end()) {
+        *r_iter++ = *a_it++;
     }
 
     // Copy any remaining elements from b
-    if (j < n) {
-        std::copy(b.begin() + j, b.end(), r_iter);
+    while (b_it != b.end()) {
+        *r_iter++ = *b_it++;
     }
 
     return results;
 }
+
 
 // Fractile insertion (Minimean merging and sorting: An Algorithm, R. Michael Tanner)
 template <typename IterContainer>
