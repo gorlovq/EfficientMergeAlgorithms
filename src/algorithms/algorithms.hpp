@@ -8,7 +8,6 @@
 #include <iterator>
 #include <array>
 #include <cmath>
-#include <iostream>
 
 #include "common.hpp"
 
