@@ -482,121 +482,141 @@ IterContainer hwang_lin_static_stable_merge(IterContainer& a, IterContainer& b) 
  */
 template <typename IterContainer>
 IterContainer hwang_lin_dynamic_merge(IterContainer& a, IterContainer& b) {
+    // Return the other container if one is empty.
+    if (a.empty()) {
+        return b;
+    }
+    if (b.empty()) {
+        return a;
+    }
+    
+    // Swap a and b if a is larger than b to ensure a is the smaller sequence.
+    if (a.size() > b.size()) {
+        std::swap(a, b);
+    }
+
+    // Record sizes of both input ranges.
     int m = static_cast<int>(a.size());
     int n = static_cast<int>(b.size());
 
-    // Swap a and b if a is larger than b
-    if (m > n) {
-        return hwang_lin_dynamic_merge(b, a);
-    }
+    // Initialize indices for both sequences.
+    size_t i = 0; // index into A
+    size_t j = 0; // index into B
 
-    size_t i = 0;         // index into A
-    size_t j = 0;         // index into B
+    // Pre-allocate result to avoid reallocations during merge.
+    IterContainer results(a.size() + b.size());
+    
+    // Initialize write iterator at the beginning of the output.
+    typename IterContainer::iterator r_iter = results.begin();
 
-    b.reserve(n + m);
+    int remainingA = m - i;
+    int remainingB = n - j;
 
-    while (m - i > 0) {
-        int remainingA = m - i;
-        int remainingB = n - j;
+    while (remainingA > 0) {
+        remainingA = m - i;
+        remainingB = n - j;
 
+        // If remaining elements in a are less than 4, exit the main loop.
+        if (remainingA < 4) {
+            break;
+        }
+        
+        // Calculate dynamic block size parameter d based on remaining elements.
         int d = (remainingB > remainingA)
             ? static_cast<int>(std::floor(std::log2(static_cast<double>(remainingB) / (remainingA))))
             : 0;
 
-        int pow2d = pow2(d);
-
-        int c1 = pow2d;
-        int c2 = (17 * pow2d) / 14;
-        int c3 = ((12 * pow2d) / 7) - 1;
-        int c4 = ((41 * pow2d) / 28) - 1;
-
-        if (m - i < 4) {
-            for (; i < m; i++) {
-                auto pos = std::upper_bound(b.begin() + j, b.end(), a[i]);
-                b.insert(pos, a[i]);
-                n = static_cast<int>(b.size());
-            }
+        if (d <= 0) {
             break;
         }
 
+        // Calculate block sizes for different nodes.
+        int pow2d = pow2(d);
+        int c1 = pow2d;                    // Block size for Node A
+        int c2 = (17 * pow2d) / 14;        // Block size for Node B
+        int c3 = ((12 * pow2d) / 7) - 1;   // Block size for Node C
+        int c4 = ((41 * pow2d) / 28) - 1;  // Block size for Node D
+
+        // Get next 4 elements from sequence a.
         auto a1 = a[i];
         auto a2 = a[i + 1];
         auto a3 = a[i + 2];
         auto a4 = a[i + 3];
 
-        // NODE A.
-        if (a1 > b[j + c1 - 1]) {
+        // NODE A: Handle case where first element of a is greater than entire block in b.
+        if ((j + c1 - 1) < n && a1 > b[j + c1 - 1]) {
+            std::copy(b.begin() + j, b.begin() + j + c1, r_iter);
+            r_iter += c1;
             j += c1;
             continue;
         }
-        // NODE B.
-        if (a2 > b[j + c2 - 1]) {
-            auto pos = std::upper_bound(b.begin() + j, b.begin() + j + c1, a1);
-            b.insert(pos, a1);
 
+        // NODE B: Handle case where second element of a is greater than block in b.
+        if ((j + c2 - 1) < n && a2 > b[j + c2 - 1]) {
+            auto pos1 = insert_and_copy<IterContainer>(b.begin() + j, b.begin() + j + c1, r_iter, a1);
+            std::copy(pos1, b.begin() + j + c2, r_iter);
+            r_iter += std::distance(pos1, b.begin() + j + c2);
             i++;
             j += c2;
             continue;
         }
-        // NODE C.
-        if (a3 > b[j + c3 - 1]) {
-            {
-                auto pos = std::upper_bound(b.begin() + j, b.begin() + j + c2, a1);
-                b.insert(pos, a1);
-            }
-            {
-                auto pos = std::upper_bound(b.begin() + j, b.begin() + j + c2 + 1, a2);
-                b.insert(pos, a2);
-            }
 
+        // NODE C: Handle case where third element of a is greater than block in b.
+        if ((j + c3 - 1) < n && a3 > b[j + c3 - 1]) {
+            auto pos1 = insert_and_copy<IterContainer>(b.begin() + j, b.begin() + j + c2, r_iter, a1);
+            auto pos2 = insert_and_copy<IterContainer>(pos1, b.begin() + j + c2 + 1, r_iter, a2);
+            std::copy(pos2, b.begin() + j + c3, r_iter);
+            r_iter += std::distance(pos2, b.begin() + j + c3);
             i += 2;
             j += c3;
             continue;
         }
-        // NODE D.
-        if (a4 > b[j + c4 - 1]) {
-            {
-                auto pos = std::upper_bound(b.begin() + j, b.begin() + j + c3, a1);
-                b.insert(pos, a1);
-            }
-            {
-                auto pos = std::upper_bound(b.begin() + j, b.begin() + j + c3 + 1, a2);
-                b.insert(pos, a2);
-            }
-            {
-                auto pos = std::upper_bound(b.begin() + j, b.begin() + j + c3 + 2, a3);
-                b.insert(pos, a3);
-            }
 
+        // NODE D: Handle case where fourth element of a is greater than block in b.
+        if ((j + c4 - 1) < n && a4 > b[j + c4 - 1]) {            
+            auto pos1 = insert_and_copy<IterContainer>(b.begin() + j, b.begin() + j + c3, r_iter, a1);
+            auto pos2 = insert_and_copy<IterContainer>(pos1, b.begin() + j + c3, r_iter, a2);
+            auto pos3 = insert_and_copy<IterContainer>(pos2, b.begin() + j + c3, r_iter, a3);
             i += 3;
-            j += c4;
+            j += std::distance(b.begin() + j, pos3);
             continue;
         }
-        // NODE E.
-        else {
-            auto pos = std::upper_bound(b.begin() + j, b.begin() + j + c4, a1);
-            b.insert(pos, a1);
 
-            pos = std::upper_bound(b.begin() + j, b.begin() + j + c4 + 1, a2);
-            b.insert(pos, a2);
+        // NODE E: Handle remaining case by inserting all four elements from a into b.
+        auto pos1 = insert_and_copy<IterContainer>(b.begin() + j, b.begin() + j + c4, r_iter, a1);
+        auto pos2 = insert_and_copy<IterContainer>(pos1, b.begin() + j + c4 + 1, r_iter, a2);
+        auto pos3 = insert_and_copy<IterContainer>(pos2, b.begin() + j + c4 + 2, r_iter, a3);
+        auto pos4 = insert_and_copy<IterContainer>(pos3, b.begin() + j + c4 + 3, r_iter, a4);
+        i += 4;
+        j += std::distance(b.begin() + j, pos4);
+    }
 
-            pos = std::upper_bound(b.begin() + j, b.begin() + j + c4 + 2, a3);
-            b.insert(pos, a3);
+    // Merge remaining elements from both sequences.
+    auto a_it = a.begin() + i;
+    auto b_it = b.begin() + j;
 
-            pos = std::upper_bound(b.begin() + j, b.begin() + j + c4 + 3, a4);
-            b.insert(pos, a4);
-
-            int annexed = static_cast<int>(std::distance(b.begin() + j, pos));
-
-            i += 4;
-            j += annexed;
-            n = static_cast<int>(b.size());
-            continue;
+    // Merge remaining elements from both arrays.
+    while (a_it != a.end() && b_it != b.end()) {
+        if (*a_it <= *b_it) {
+            *r_iter++ = *a_it++;
+        } else {
+            *r_iter++ = *b_it++;
         }
     }
 
-    return b;
+    // Copy any remaining elements from a.
+    while (a_it != a.end()) {
+        *r_iter++ = *a_it++;
+    }
+
+    // Copy any remaining elements from b.
+    while (b_it != b.end()) {
+        *r_iter++ = *b_it++;
+    }
+
+    return results;
 }
+
 
 // Fractile insertion (Minimean merging and sorting: An Algorithm, R. Michael Tanner)
 template <typename IterContainer>
