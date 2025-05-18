@@ -8,6 +8,7 @@
 #include <iterator>
 #include <array>
 #include <cmath>
+#include <iostream>
 
 #include "common.hpp"
 
@@ -489,13 +490,12 @@ IterContainer hwang_lin_dynamic_merge(IterContainer& a, IterContainer& b) {
         return a;
     }
     
+    if (a.size() > b.size()) {
+        std::swap(a, b);
+    }
+
     int m = static_cast<int>(a.size());
     int n = static_cast<int>(b.size());
-
-    // Swap a and b if a is larger than b
-    if (m > n) {
-        return hwang_lin_dynamic_merge(b, a);
-    }
 
     size_t i = 0;         // index into A
     size_t j = 0;         // index into B
@@ -505,10 +505,19 @@ IterContainer hwang_lin_dynamic_merge(IterContainer& a, IterContainer& b) {
     
     typename IterContainer::iterator r_iter = results.begin(); // write-pointer starting from the front.
 
-    while (m - i > 0) {
-        int remainingA = m - i;
-        int remainingB = n - j;
 
+    int remainingA = m - i;
+    int remainingB = n - j;
+
+    while (remainingA > 0) {
+        remainingA = m - i;
+        remainingB = n - j;
+
+
+        if (remainingA < 4) {
+            break;
+        }
+        
         int d = (remainingB > remainingA)
             ? static_cast<int>(std::floor(std::log2(static_cast<double>(remainingB) / (remainingA))))
             : 0;
@@ -524,162 +533,88 @@ IterContainer hwang_lin_dynamic_merge(IterContainer& a, IterContainer& b) {
         int c3 = ((12 * pow2d) / 7) - 1;
         int c4 = ((41 * pow2d) / 28) - 1;
 
-        if (remainingA < 4) {
-            break;
-        }
-
-        // Ensure we don't access out of bounds
-        if (i + 3 >= m || j + c4 >= n) {
-            break;
-        }
-
         auto a1 = a[i];
         auto a2 = a[i + 1];
         auto a3 = a[i + 2];
         auto a4 = a[i + 3];
 
         // NODE A.
-        if (j + c1 <= n && a1 > b[j + c1 - 1]) {
+        if ((j + c1 - 1) < n && a1 > b[j + c1 - 1]) {
             std::copy(b.begin() + j, b.begin() + j + c1, r_iter);
             r_iter += c1;
             j += c1;
             continue;
         }
-
         // NODE B.
-        if (j + c2 <= n && a2 > b[j + c2 - 1]) {
-            // Find position for a1
+        if ((j + c2 - 1) < n && a2 > b[j + c2 - 1]) {
             auto pos = std::upper_bound(b.begin() + j, b.begin() + j + c1, a1);
-            
-            // Copy elements from b before a1
             std::copy(b.begin() + j, pos, r_iter);
             r_iter += std::distance(b.begin() + j, pos);
-            
-            // Insert a1
             *r_iter++ = a1;
-            
-            // Copy remaining elements from b
             std::copy(pos, b.begin() + j + c2, r_iter);
             r_iter += std::distance(pos, b.begin() + j + c2);
-            
             i++;
             j += c2;
             continue;
         }
-
         // NODE C.
-        if (j + c3 <= n && a3 > b[j + c3 - 1]) {
-            // Find position for a1
+        if ((j + c3 - 1) < n && a3 > b[j + c3 - 1]) {
             auto pos1 = std::upper_bound(b.begin() + j, b.begin() + j + c2, a1);
-            
-            // Copy elements from b before a1
             std::copy(b.begin() + j, pos1, r_iter);
             r_iter += std::distance(b.begin() + j, pos1);
-            
-            // Insert a1
             *r_iter++ = a1;
-            
-            // Find position for a2
+
             auto pos2 = std::upper_bound(pos1, b.begin() + j + c2 + 1, a2);
-            
-            // Copy elements between a1 and a2
             std::copy(pos1, pos2, r_iter);
             r_iter += std::distance(pos1, pos2);
-            
-            // Insert a2
             *r_iter++ = a2;
             
-            // Copy remaining elements from b
             std::copy(pos2, b.begin() + j + c3, r_iter);
             r_iter += std::distance(pos2, b.begin() + j + c3);
-            
             i += 2;
             j += c3;
             continue;
         }
 
         // NODE D.
-        if (j + c4 <= n && a4 > b[j + c4 - 1]) {
-            // Find position for a1
+        if ((j + c4 - 1) < n && a4 > b[j + c4 - 1]) {            
             auto pos1 = std::upper_bound(b.begin() + j, b.begin() + j + c3, a1);
-            
-            // Copy elements from b before a1
             std::copy(b.begin() + j, pos1, r_iter);
             r_iter += std::distance(b.begin() + j, pos1);
-            
-            // Insert a1
             *r_iter++ = a1;
-            
-            // Find position for a2
-            auto pos2 = std::upper_bound(pos1, b.begin() + j + c3 + 1, a2);
-            
-            // Copy elements between a1 and a2
+
+            auto pos2 = std::upper_bound(pos1, b.begin() + j + c3, a2);
             std::copy(pos1, pos2, r_iter);
             r_iter += std::distance(pos1, pos2);
-            
-            // Insert a2
             *r_iter++ = a2;
-            
-            // Find position for a3
-            auto pos3 = std::upper_bound(pos2, b.begin() + j + c3 + 2, a3);
-            
-            // Copy elements between a2 and a3
+
+            auto pos3 = std::upper_bound(pos2, b.begin() + j + c3, a3);
             std::copy(pos2, pos3, r_iter);
             r_iter += std::distance(pos2, pos3);
-            
-            // Insert a3
             *r_iter++ = a3;
-            
-            // Copy remaining elements from b
-            std::copy(pos3, b.begin() + j + c4, r_iter);
-            r_iter += std::distance(pos3, b.begin() + j + c4);
-            
+
             i += 3;
-            j += c4;
+            j += std::distance(b.begin() + j, pos3);
             continue;
         }
 
         // NODE E.
-        // Find position for a1
         auto pos1 = std::upper_bound(b.begin() + j, b.begin() + j + c4, a1);
-        
-        // Copy elements from b before a1
         std::copy(b.begin() + j, pos1, r_iter);
         r_iter += std::distance(b.begin() + j, pos1);
-        
-        // Insert a1
         *r_iter++ = a1;
-        
-        // Find position for a2
         auto pos2 = std::upper_bound(pos1, b.begin() + j + c4 + 1, a2);
-        
-        // Copy elements between a1 and a2
         std::copy(pos1, pos2, r_iter);
         r_iter += std::distance(pos1, pos2);
-        
-        // Insert a2
         *r_iter++ = a2;
-        
-        // Find position for a3
         auto pos3 = std::upper_bound(pos2, b.begin() + j + c4 + 2, a3);
-        
-        // Copy elements between a2 and a3
         std::copy(pos2, pos3, r_iter);
         r_iter += std::distance(pos2, pos3);
-        
-        // Insert a3
         *r_iter++ = a3;
-        
-        // Find position for a4
         auto pos4 = std::upper_bound(pos3, b.begin() + j + c4 + 3, a4);
-        
-        // Copy elements between a3 and a4
         std::copy(pos3, pos4, r_iter);
         r_iter += std::distance(pos3, pos4);
-        
-        // Insert a4
         *r_iter++ = a4;
-        
         i += 4;
         j += std::distance(b.begin() + j, pos4);
     }
