@@ -31,3 +31,18 @@ void binary_insert(
     auto inser_it = std::lower_bound(begin, end, element);
     c.insert(inser_it, element);
 }
+
+// Insert element and copy elements before insertion point
+template <typename IterContainer>
+typename IterContainer::iterator insert_and_copy(
+    typename IterContainer::iterator start,
+    typename IterContainer::iterator end,
+    typename IterContainer::iterator& r_iter,
+    const typename IterContainer::value_type& value
+) {
+    auto pos = std::upper_bound(start, end, value);
+    std::copy(start, pos, r_iter);
+    r_iter += std::distance(start, pos);
+    *r_iter++ = value;
+    return pos;
+}

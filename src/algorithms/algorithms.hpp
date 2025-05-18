@@ -107,8 +107,13 @@ void binary_insertion(IterContainer& arr, const T& elem) {
  *   - It is assumed that the containers a and b are already sorted before calling the function.
  *
  */
-template <typename IterContainer>
-requires std::random_access_iterator<typename IterContainer::const_iterator>
+template <typename IterContainer,
+          typename = typename std::enable_if<
+              std::is_same<
+                  typename std::iterator_traits<typename IterContainer::const_iterator>::iterator_category,
+                  std::random_access_iterator_tag
+              >::value
+          >::type>
 IterContainer hwang_lin_knuth_merge(const IterContainer& a, const IterContainer& b) {
     using size_t  = typename IterContainer::size_type;
     using iter    = typename IterContainer::const_iterator;
@@ -483,6 +488,7 @@ IterContainer hwang_lin_static_stable_merge(IterContainer& a, IterContainer& b) 
  */
 template <typename IterContainer>
 IterContainer hwang_lin_dynamic_merge(IterContainer& a, IterContainer& b) {
+    // Return the other container if one is empty.
     if (a.empty()) {
         return b;
     }
@@ -490,21 +496,24 @@ IterContainer hwang_lin_dynamic_merge(IterContainer& a, IterContainer& b) {
         return a;
     }
     
+    // Swap a and b if a is larger than b to ensure a is the smaller sequence.
     if (a.size() > b.size()) {
         std::swap(a, b);
     }
 
+    // Record sizes of both input ranges.
     int m = static_cast<int>(a.size());
     int n = static_cast<int>(b.size());
 
-    size_t i = 0;         // index into A
-    size_t j = 0;         // index into B
+    // Initialize indices for both sequences.
+    size_t i = 0; // index into A
+    size_t j = 0; // index into B
 
     // Pre-allocate result to avoid reallocations during merge.
     IterContainer results(a.size() + b.size());
     
-    typename IterContainer::iterator r_iter = results.begin(); // write-pointer starting from the front.
-
+    // Initialize write iterator at the beginning of the output.
+    typename IterContainer::iterator r_iter = results.begin();
 
     int remainingA = m - i;
     int remainingB = n - j;
@@ -513,11 +522,12 @@ IterContainer hwang_lin_dynamic_merge(IterContainer& a, IterContainer& b) {
         remainingA = m - i;
         remainingB = n - j;
 
-
+        // If remaining elements in a are less than 4, exit the main loop.
         if (remainingA < 4) {
             break;
         }
         
+        // Calculate dynamic block size parameter d based on remaining elements.
         int d = (remainingB > remainingA)
             ? static_cast<int>(std::floor(std::log2(static_cast<double>(remainingB) / (remainingA))))
             : 0;
@@ -526,49 +536,41 @@ IterContainer hwang_lin_dynamic_merge(IterContainer& a, IterContainer& b) {
             break;
         }
 
+        // Calculate block sizes for different nodes.
         int pow2d = pow2(d);
+        int c1 = pow2d;                    // Block size for Node A
+        int c2 = (17 * pow2d) / 14;        // Block size for Node B
+        int c3 = ((12 * pow2d) / 7) - 1;   // Block size for Node C
+        int c4 = ((41 * pow2d) / 28) - 1;  // Block size for Node D
 
-        int c1 = pow2d;
-        int c2 = (17 * pow2d) / 14;
-        int c3 = ((12 * pow2d) / 7) - 1;
-        int c4 = ((41 * pow2d) / 28) - 1;
-
+        // Get next 4 elements from sequence a.
         auto a1 = a[i];
         auto a2 = a[i + 1];
         auto a3 = a[i + 2];
         auto a4 = a[i + 3];
 
-        // NODE A.
+        // NODE A: Handle case where first element of a is greater than entire block in b.
         if ((j + c1 - 1) < n && a1 > b[j + c1 - 1]) {
             std::copy(b.begin() + j, b.begin() + j + c1, r_iter);
             r_iter += c1;
             j += c1;
             continue;
         }
-        // NODE B.
+
+        // NODE B: Handle case where second element of a is greater than block in b.
         if ((j + c2 - 1) < n && a2 > b[j + c2 - 1]) {
-            auto pos = std::upper_bound(b.begin() + j, b.begin() + j + c1, a1);
-            std::copy(b.begin() + j, pos, r_iter);
-            r_iter += std::distance(b.begin() + j, pos);
-            *r_iter++ = a1;
-            std::copy(pos, b.begin() + j + c2, r_iter);
-            r_iter += std::distance(pos, b.begin() + j + c2);
+            auto pos1 = insert_and_copy<IterContainer>(b.begin() + j, b.begin() + j + c1, r_iter, a1);
+            std::copy(pos1, b.begin() + j + c2, r_iter);
+            r_iter += std::distance(pos1, b.begin() + j + c2);
             i++;
             j += c2;
             continue;
         }
-        // NODE C.
-        if ((j + c3 - 1) < n && a3 > b[j + c3 - 1]) {
-            auto pos1 = std::upper_bound(b.begin() + j, b.begin() + j + c2, a1);
-            std::copy(b.begin() + j, pos1, r_iter);
-            r_iter += std::distance(b.begin() + j, pos1);
-            *r_iter++ = a1;
 
-            auto pos2 = std::upper_bound(pos1, b.begin() + j + c2 + 1, a2);
-            std::copy(pos1, pos2, r_iter);
-            r_iter += std::distance(pos1, pos2);
-            *r_iter++ = a2;
-            
+        // NODE C: Handle case where third element of a is greater than block in b.
+        if ((j + c3 - 1) < n && a3 > b[j + c3 - 1]) {
+            auto pos1 = insert_and_copy<IterContainer>(b.begin() + j, b.begin() + j + c2, r_iter, a1);
+            auto pos2 = insert_and_copy<IterContainer>(pos1, b.begin() + j + c2 + 1, r_iter, a2);
             std::copy(pos2, b.begin() + j + c3, r_iter);
             r_iter += std::distance(pos2, b.begin() + j + c3);
             i += 2;
@@ -576,54 +578,30 @@ IterContainer hwang_lin_dynamic_merge(IterContainer& a, IterContainer& b) {
             continue;
         }
 
-        // NODE D.
+        // NODE D: Handle case where fourth element of a is greater than block in b.
         if ((j + c4 - 1) < n && a4 > b[j + c4 - 1]) {            
-            auto pos1 = std::upper_bound(b.begin() + j, b.begin() + j + c3, a1);
-            std::copy(b.begin() + j, pos1, r_iter);
-            r_iter += std::distance(b.begin() + j, pos1);
-            *r_iter++ = a1;
-
-            auto pos2 = std::upper_bound(pos1, b.begin() + j + c3, a2);
-            std::copy(pos1, pos2, r_iter);
-            r_iter += std::distance(pos1, pos2);
-            *r_iter++ = a2;
-
-            auto pos3 = std::upper_bound(pos2, b.begin() + j + c3, a3);
-            std::copy(pos2, pos3, r_iter);
-            r_iter += std::distance(pos2, pos3);
-            *r_iter++ = a3;
-
+            auto pos1 = insert_and_copy<IterContainer>(b.begin() + j, b.begin() + j + c3, r_iter, a1);
+            auto pos2 = insert_and_copy<IterContainer>(pos1, b.begin() + j + c3, r_iter, a2);
+            auto pos3 = insert_and_copy<IterContainer>(pos2, b.begin() + j + c3, r_iter, a3);
             i += 3;
             j += std::distance(b.begin() + j, pos3);
             continue;
         }
 
-        // NODE E.
-        auto pos1 = std::upper_bound(b.begin() + j, b.begin() + j + c4, a1);
-        std::copy(b.begin() + j, pos1, r_iter);
-        r_iter += std::distance(b.begin() + j, pos1);
-        *r_iter++ = a1;
-        auto pos2 = std::upper_bound(pos1, b.begin() + j + c4 + 1, a2);
-        std::copy(pos1, pos2, r_iter);
-        r_iter += std::distance(pos1, pos2);
-        *r_iter++ = a2;
-        auto pos3 = std::upper_bound(pos2, b.begin() + j + c4 + 2, a3);
-        std::copy(pos2, pos3, r_iter);
-        r_iter += std::distance(pos2, pos3);
-        *r_iter++ = a3;
-        auto pos4 = std::upper_bound(pos3, b.begin() + j + c4 + 3, a4);
-        std::copy(pos3, pos4, r_iter);
-        r_iter += std::distance(pos3, pos4);
-        *r_iter++ = a4;
+        // NODE E: Handle remaining case by inserting all four elements from a into b.
+        auto pos1 = insert_and_copy<IterContainer>(b.begin() + j, b.begin() + j + c4, r_iter, a1);
+        auto pos2 = insert_and_copy<IterContainer>(pos1, b.begin() + j + c4 + 1, r_iter, a2);
+        auto pos3 = insert_and_copy<IterContainer>(pos2, b.begin() + j + c4 + 2, r_iter, a3);
+        auto pos4 = insert_and_copy<IterContainer>(pos3, b.begin() + j + c4 + 3, r_iter, a4);
         i += 4;
         j += std::distance(b.begin() + j, pos4);
     }
 
-    // Merge remaining elements
+    // Merge remaining elements from both sequences.
     auto a_it = a.begin() + i;
     auto b_it = b.begin() + j;
 
-    // Merge remaining elements from both arrays
+    // Merge remaining elements from both arrays.
     while (a_it != a.end() && b_it != b.end()) {
         if (*a_it <= *b_it) {
             *r_iter++ = *a_it++;
@@ -632,12 +610,12 @@ IterContainer hwang_lin_dynamic_merge(IterContainer& a, IterContainer& b) {
         }
     }
 
-    // Copy any remaining elements from a
+    // Copy any remaining elements from a.
     while (a_it != a.end()) {
         *r_iter++ = *a_it++;
     }
 
-    // Copy any remaining elements from b
+    // Copy any remaining elements from b.
     while (b_it != b.end()) {
         *r_iter++ = *b_it++;
     }
@@ -863,4 +841,17 @@ IterContainer simple_kim_kutzner_merge(IterContainer& a, IterContainer& b) {
     b.clear();
     simple_kim_kutzner_alg(a.begin(), std::next(a.begin(), orig_a_size), a.end());
     return a;
+}
+
+template <typename IterContainer>
+void insert_and_copy(
+    typename IterContainer::const_iterator start,
+    typename IterContainer::const_iterator end,
+    typename IterContainer::iterator& r_iter,
+    const typename IterContainer::value_type& value
+) {
+    auto pos = std::upper_bound(start, end, value);
+    std::copy(start, pos, r_iter);
+    r_iter += std::distance(start, pos);
+    *r_iter++ = value;
 }
