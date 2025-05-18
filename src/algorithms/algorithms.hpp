@@ -107,13 +107,8 @@ void binary_insertion(IterContainer& arr, const T& elem) {
  *   - It is assumed that the containers a and b are already sorted before calling the function.
  *
  */
-template <typename IterContainer,
-          typename = typename std::enable_if<
-              std::is_same<
-                  typename std::iterator_traits<typename IterContainer::const_iterator>::iterator_category,
-                  std::random_access_iterator_tag
-              >::value
-          >::type>
+template <typename IterContainer>
+requires std::random_access_iterator<typename IterContainer::const_iterator>
 IterContainer hwang_lin_knuth_merge(const IterContainer& a, const IterContainer& b) {
     using size_t  = typename IterContainer::size_type;
     using iter    = typename IterContainer::const_iterator;
@@ -841,17 +836,4 @@ IterContainer simple_kim_kutzner_merge(IterContainer& a, IterContainer& b) {
     b.clear();
     simple_kim_kutzner_alg(a.begin(), std::next(a.begin(), orig_a_size), a.end());
     return a;
-}
-
-template <typename IterContainer>
-void insert_and_copy(
-    typename IterContainer::const_iterator start,
-    typename IterContainer::const_iterator end,
-    typename IterContainer::iterator& r_iter,
-    const typename IterContainer::value_type& value
-) {
-    auto pos = std::upper_bound(start, end, value);
-    std::copy(start, pos, r_iter);
-    r_iter += std::distance(start, pos);
-    *r_iter++ = value;
 }
