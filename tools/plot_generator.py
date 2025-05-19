@@ -80,13 +80,14 @@ for csv_file in csv_files:
         ax.scatter(x, y, z, color='red', s=50, alpha=0.7)
         
         # Add color bar
-        fig.colorbar(surf, ax=ax, shrink=0.5, aspect=5, label='Количество сравнений')
+        cbar = fig.colorbar(surf, ax=ax, shrink=0.5, aspect=5)
+        cbar.set_label('Количество сравнений', fontsize=14)
     
     # Set labels and title
     ax.set_xlabel('M', fontsize=14)
     ax.set_ylabel('N', fontsize=14)
     ax.set_zlabel('Количество сравнений', fontsize=14)
-    ax.set_title(f'Количество сравнений для {algorithm_name}', fontsize=16)
+    fig.suptitle(f'Количество сравнений для {algorithm_name}', fontsize=16, y=0.88, x=0.57)
     
     # Set axis limits
     ax.set_zlim(0, max(df['Comparisons']) * 1.1)
@@ -95,6 +96,12 @@ for csv_file in csv_files:
     # Set view angle
     ax.view_init(elev=20, azim=200)
     ax.grid(True)
+
+    # Add more space on the left for the z-label
+    plt.subplots_adjust(left=0.22)
+    
+    # Improve layout so title is visually centered
+    plt.tight_layout(rect=[0, 0, 1, 0.93])
     
     # Save plot
     plt.savefig(f'{plots_dir}/{algorithm_name}_3d.png', dpi=300, bbox_inches='tight')
