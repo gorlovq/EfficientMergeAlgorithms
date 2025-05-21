@@ -4,6 +4,7 @@
 #include <string>
 #include "framework/generate_sorted_vectors.hpp"
 #include "framework/hwang_lin_dynamic_merge.hpp"
+#include "framework/hwang_lin_dynamic_stable_merge.hpp"
 #include "framework/hwang_lin_static_merge.hpp"
 #include "framework/hwang_lin_static_stable_merge.hpp"
 #include "framework/hwang_lin_knuth_merge.hpp"
@@ -83,6 +84,7 @@ int main(int argc, char* argv[]) {
     std::vector<std::unique_ptr<MergeAlgorithm>> algorithms;
     algorithms.push_back(std::make_unique<TwoWayMergeAlgorithm>());
     algorithms.push_back(std::make_unique<HwangLinDynamicMergeAlgorithm>());
+    algorithms.push_back(std::make_unique<HwangLinDynamicStableMergeAlgorithm>());
     algorithms.push_back(std::make_unique<HwangLinKnuthMergeAlgorithm>());
     algorithms.push_back(std::make_unique<HwangLinStaticMergeAlgorithm>());
     algorithms.push_back(std::make_unique<HwangLinStaticStableMergeAlgorithm>());

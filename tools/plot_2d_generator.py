@@ -52,8 +52,10 @@ COLORS = {
     'TwoWayMerge': '#4472C4',  # Blue
     'FractialInsertionMerge': '#ED7D31',  # Orange
     'HwangLinDynamicMerge': '#A5A5A5',  # Gray
+    'HwangLinDynamicStableMerge': '#FF0000',  # Red
     'HwangLinKnuthMerge': '#FFC000',  # Yellow
     'HwangLinStaticMerge': '#5B9BD5',  # Light Blue
+    'HwangLinStaticStableMerge': '#FF00FF',  # Pink
     'SimpleKimKutznerMerge': '#70AD47', # Green
 }
 
