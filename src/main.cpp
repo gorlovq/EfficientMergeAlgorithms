@@ -4,6 +4,7 @@
 #include <string>
 #include "framework/generate_sorted_vectors.hpp"
 #include "framework/hwang_lin_dynamic_merge.hpp"
+#include "framework/hwang_lin_dynamic_stable_merge.hpp"
 #include "framework/hwang_lin_static_merge.hpp"
 #include "framework/hwang_lin_static_kutzner_merge.hpp"
 #include "framework/hwang_lin_static_stable_merge.hpp"
@@ -54,23 +55,29 @@ int main(int argc, char* argv[]) {
     //tester.addScenario({100000, 1000000, CornerCaseType::FIRST_ALL_GREATER, 0, 1000000, 5, 5});
     //tester.addScenario({100000, 1000000, CornerCaseType::PARTIAL_OVERLAP, 0, 1000000, 5, 5});
 
-    tester.addScenario({1000, 100000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});
-    tester.addScenario({1000, 100000, CornerCaseType::DUPLICATES_IN_BOTH, 0, 1000000, 5, 5});
-    tester.addScenario({100000, 100000, CornerCaseType::EQUAL_ARRAYS, 0, 1000000, 5, 5});
-    tester.addScenario({1000, 100000, CornerCaseType::FIRST_ALL_SMALLER, 0, 1000000, 5, 5});
-    tester.addScenario({1000, 100000, CornerCaseType::FIRST_ALL_GREATER, 0, 1000000, 5, 5});
-    tester.addScenario({1000, 100000, CornerCaseType::PARTIAL_OVERLAP, 0, 1000000, 5, 5});
+    for (int m = 5000; m <= 100000; m += 5000) {
+        for (int n = 5000; n <= 100000; n += 5000) {
+            tester.addScenario({m, n, CornerCaseType::RANDOM, 0, 1000000, 5, 5});
+        }
+    }
+
+    for (int m = 1000; m <= 5000; m += 1000) {
+        for (int n = 1000; n <= 5000; n += 1000) {
+            tester.addScenario({m, n, CornerCaseType::RANDOM, 0, 1000000, 5, 5});
+        }
+    }
 
     std::vector<std::unique_ptr<MergeAlgorithm>> algorithms;
     algorithms.push_back(std::make_unique<TwoWayMergeAlgorithm>());
     //algorithms.push_back(std::make_unique<HwangLinDynamicMergeAlgorithm>());
+    //algorithms.push_back(std::make_unique<HwangLinDynamicStableMergeAlgorithm>());
     algorithms.push_back(std::make_unique<HwangLinKnuthMergeAlgorithm>());
     //algorithms.push_back(std::make_unique<HwangLinStaticMergeAlgorithm>());
     algorithms.push_back(std::make_unique<HwangLinStaticKutznerMergeAlgorithm>());
     //algorithms.push_back(std::make_unique<HwangLinStaticStableMergeAlgorithm>());
     algorithms.push_back(std::make_unique<FractialInsertionMergeAlgorithm>());
     algorithms.push_back(std::make_unique<SimpleKimKutznerMergeAlgorithm>());
-    //algorithms.push_back(std::make_unique<UnstableCoreKimKutznerMergeAlgorithm>());
+    algorithms.push_back(std::make_unique<UnstableCoreKimKutznerMergeAlgorithm>());
 
     const std::string separator(REPORT_WIDTH, '=');
 
