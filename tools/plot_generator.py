@@ -76,9 +76,6 @@ for csv_file in csv_files:
             alpha=0.9
         )
         
-        # Add scatter points for actual data
-        ax.scatter(x, y, z, color='red', s=50, alpha=0.7)
-        
         # Add color bar
         cbar = fig.colorbar(surf, ax=ax, shrink=0.5, aspect=5)
         cbar.set_label('Количество сравнений', fontsize=14)
@@ -91,7 +88,7 @@ for csv_file in csv_files:
     
     # Set axis limits
     ax.set_zlim(0, max(df['Comparisons']) * 1.1)
-    ax.set_ylim(y_max * 1.1, y_min * 0.9)
+    ax.set_ylim(y_min * 0.9, y_max * 1.1)
     
     # Set view angle
     ax.view_init(elev=20, azim=200)
