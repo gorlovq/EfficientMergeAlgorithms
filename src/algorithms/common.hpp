@@ -36,14 +36,6 @@ int binary_insert(
 }
 
 template <class It>
-void floating_hole(It blockEnd,
-                   It first2,
-                   typename std::iterator_traits<It>::difference_type len) {
-    if (len == 0) return;
-    std::rotate(blockEnd, first2, first2 + len);  // [blockEnd, first2) <- left, [first2, first2+len) -> right
-}
-
-template <class It>
 void block_swap(It left, It right,
                 typename std::iterator_traits<It>::difference_type k) {
     for (typename std::iterator_traits<It>::difference_type i = 0; i < k; ++i, ++left, ++right)
@@ -57,11 +49,22 @@ It search_minimal_block(std::ptrdiff_t k,
                         It extra,
                         Comp comp = Comp{}) {
     It best = extra;
-    for (It cur = t; std::distance(cur, e) >= k; cur += k) {
-        It cur_last  = cur  + k - 1;
-        It best_last = best + k - 1;
-        if (comp(*cur, *best) || (!comp(*best, *cur) && comp(*cur_last, *best_last)))
+    auto best_first = *best;
+    auto best_last  = *(best + std::min(k, std::distance(best, e)) - 1);
+
+    const std::ptrdiff_t limit = std::distance(t, e);
+    for (std::ptrdiff_t offset = 0; offset + k <= limit; offset += k) {
+        It cur = t + offset;
+        auto cur_first = *cur;
+        auto cur_last  = *(cur + k - 1);
+
+        if (comp(cur_first, best_first) ||
+           (!comp(best_first, cur_first) && comp(cur_last, best_last))) {
             best = cur;
+            best_first = cur_first;
+            best_last  = cur_last;
+        }
     }
+
     return best;
 }

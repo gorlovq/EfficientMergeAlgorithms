@@ -602,65 +602,54 @@ IterContainer hwang_lin_dynamic_merge(IterContainer& a, IterContainer& b) {
 
 // Fractile insertion (Minimean merging and sorting: An Algorithm, R. Michael Tanner)
 template <typename IterContainer>
-void fractile_insertion_alg(
-    typename IterContainer::const_iterator a_begin,
-    int m,
-    typename IterContainer::const_iterator b_begin,
-    typename IterContainer::const_iterator b_end,
-    IterContainer& b
-) {
+void fractile_insertion_alg(typename IterContainer::const_iterator a_begin, int m, IterContainer& b) {
     // Step 1
-    int n = static_cast<int>(std::distance(b_begin, b_end));
-
-    if (m == 0) return;
-    if (n == 0) {
-        b.insert(b_begin, a_begin, a_begin + m);
-        return;
-    }
-
+    int n = static_cast<int>(std::distance(b.begin(), b.end()));
     int f = static_cast<int>(std::floor(static_cast<double>(m) / 2.0));
     int k = static_cast<int>(std::floor(static_cast<double>(n) * (static_cast<double>(f)/(static_cast<double>(m) + 1.0))));
     int alpha = static_cast<int>(std::floor((1.0/2.0) * std::log2(static_cast<double>(n) * ((1.0 + static_cast<double>(n))/static_cast<double>(m))) - 1.3));
     int delta = std::pow(2, alpha);
 
-    int insert_pos = 0;
-
     // Step 2
-    if (*(a_begin + f) > *(b_begin + k)) {
+    if (*(a_begin + f) > *(b.begin() + k)) {
         int prev_k;
         do {
             prev_k = k;
             k += delta;
-        } while ((k < n) && (*(a_begin + f) >= *(b_begin + k)));
+        } while ((k < n) && (*(a_begin + f) >= *(b.begin() + k)));
         if (k >= n) {
-            insert_pos = binary_insert(b, b_begin + prev_k, b_begin + n, *(a_begin + f));
+            binary_insert(b, b.begin() + prev_k, b.begin() + n, *(a_begin + f));
         } else {
-            insert_pos = binary_insert(b, b_begin + prev_k, b_begin + k, *(a_begin + f));
+            binary_insert(b, b.begin() + prev_k, b.begin() + k, *(a_begin + f));
         }
+
+        if (m > 2) {
+            fractile_insertion_alg(a_begin, f, b); // left part
+            fractile_insertion_alg(a_begin + f + 1, m - f - 1, b); // right part
+        } else if (m == 2) {
+            fractile_insertion_alg(a_begin, f, b); // left part
+        }
+        return;
     } else {
         int prev_k;
         do {
             prev_k = k;
             k -= delta;
-        } while ((k >= 0) && (*(a_begin + f) <= *(b_begin + k)));
+        } while ((k >= 0) && (*(a_begin + f) <= *(b.begin() + k)));
         if (k < 0) {
-            insert_pos = binary_insert(b, b_begin, b_begin + prev_k, *(a_begin + f));
+            binary_insert(b, b.begin(), b.begin() + prev_k, *(a_begin + f));
         } else {
-            insert_pos = binary_insert(b, b_begin + k, b_begin + prev_k, *(a_begin + f));
+            binary_insert(b, b.begin() + k, b.begin() + prev_k, *(a_begin + f));
         }
-    }
 
-    auto new_b_begin = b.begin();
-    auto new_b_end   = b.end();
-
-    if (m > 2) {
-        fractile_insertion_alg(a_begin, f, new_b_begin, new_b_begin + insert_pos, b); // left part
-        fractile_insertion_alg(a_begin + f + 1, m - f - 1, new_b_begin + insert_pos + 1, new_b_end, b); // right part
-    } else if (m == 2) {
-        binary_insert(b, new_b_begin, new_b_end, *a_begin); // left part
+        if (m > 2) {
+            fractile_insertion_alg(a_begin, f, b); // left part
+            fractile_insertion_alg(a_begin + f + 1, m - f - 1, b); // right part
+        } else if (m == 2) {
+            fractile_insertion_alg(a_begin, f, b); // left part
+        }
+        return;
     }
-    
-    return;
 }
 
 /*
@@ -692,22 +681,16 @@ void fractile_insertion_alg(
  */
 template <typename IterContainer>
 IterContainer fractile_insertion_merge(const IterContainer& a, const IterContainer& b) {
-    int m = static_cast<int>(a.size());
-    int n = static_cast<int>(b.size());
-
-    IterContainer r;
+    auto [m, n] = std::array<const int, 2>{{static_cast<int>(std::distance(a.begin(), a.end())), static_cast<int>(std::distance(b.begin(), b.end()))}};
+    IterContainer r; // Resulting vector
     r.reserve(m + n);
 
     if (m <= n) {
-        // Копируем b в результат
-        r.insert(r.end(), b.begin(), b.end());
-        // Вставляем элементы из a
-        fractile_insertion_alg(a.begin(), m, r.begin(), r.end(), r);
+        std::copy(b.begin(), b.end(), std::back_inserter(r)); // copy b to result
+        fractile_insertion_alg(a.begin(), m, r);
     } else {
-        // Копируем a в результат
-        r.insert(r.end(), a.begin(), a.end());
-        // Вставляем элементы из b
-        fractile_insertion_alg(b.begin(), n, r.begin(), r.end(), r);
+        std::copy(a.begin(), a.end(), std::back_inserter(r)); // copy a to result
+        fractile_insertion_alg(b.begin(), n, r);
     }
 
     return r;
@@ -818,72 +801,6 @@ IterContainer simple_kim_kutzner_merge(IterContainer& a, IterContainer& b) {
     simple_kim_kutzner_alg(a.begin(), std::next(a.begin(), orig_a_size), a.end());
     return a;
 }
-
-/*
-// Unstable Core Algorithm (On optimal and efficient in place merging, Pok-Son Kim, Arne Kutzner)
-template <typename IterContainer>
-void unstable_core_kim_kutzner(IterContainer begin, IterContainer separator, IterContainer end) {
-    using value_t = std::iter_value_t<IterContainer>;
-    using diff_t  = typename std::iterator_traits<IterContainer>::difference_type;
-
-    diff_t m = std::distance(begin,  separator); // |u|
-    diff_t n = std::distance(separator, end);    // |v|
-    
-    // trivial case
-    if (m == 0 || n == 0) return;
-
-    diff_t k = static_cast<diff_t>(std::sqrt(static_cast<double>(m)));
-    if (k == 0) k = 1;
-    diff_t first_block = (m % k == 0 ? k : m % k);
-
-    std::vector<value_t> buf; // buffer
-    buf.reserve(static_cast<std::size_t>(k));
-
-    IterContainer u_begin     = begin;                      // начало текущего блока u
-    IterContainer u_block_end = u_begin + first_block;      // конец блока u
-    IterContainer v_begin     = separator;                  // текущее начало v
-
-    while (u_begin < v_begin)
-    {
-        // copy the u block to the buffer
-        buf.assign(u_begin, u_block_end);
-        const value_t& pivot = buf.back(); // последний элемент блока
-
-        // the pivot position is on the right side
-        IterContainer v_cut  = std::ranges::lower_bound(v_begin, end, pivot);
-        diff_t   v_pref = std::distance(v_begin, v_cut);
-        IterContainer merge_end = u_block_end + v_pref;
-
-        // rotation (v_1, block) -> (block, v_1)
-        if (v_pref != 0)
-            std::ranges::rotate(u_block_end, v_begin, v_cut);
-
-        // merge buf and v_1
-        IterContainer v_it   = u_begin + buf.size();
-        IterContainer v_last = v_it + v_pref;
-        IterContainer out    = u_begin;
-
-        auto b_it   = buf.begin();
-        auto b_last = buf.end();
-
-        while (b_it != b_last && v_it != v_last)
-            *out++ = (*v_it < *b_it) ? std::move(*v_it++) : std::move(*b_it++);
-        std::move(v_it, v_last, out);
-        out += std::distance(v_it, v_last);
-        std::move(b_it, b_last, out);
-
-        // moving on to the next block
-        u_begin = merge_end;           
-        v_begin = v_cut;
-             
-        if (u_begin >= v_begin) break;
-
-        diff_t rest_u = std::distance(u_begin, v_begin);
-        diff_t blk_sz = (rest_u >= k ? k : rest_u); // the size of the next block
-        u_block_end = u_begin + blk_sz;
-    }
-}
-*/
 
 template <typename ContainerIter>
 void hwang_lin_static_kutzner(ContainerIter begin, ContainerIter separator, ContainerIter end) {
@@ -996,22 +913,23 @@ void unstable_core_kim_kutzner(ContainerIter begin, ContainerIter separator, Con
 
     // trivial case
     if (m == 0 || n == 0) return;
-    
+
     diff_t delta = 0;
-    diff_t k = static_cast<diff_t>(std::ceil(std::sqrt(static_cast<double>(m))));
+    // diff_t k = static_cast<diff_t>(std::floor(std::sqrt(static_cast<double>(m))));
+    diff_t k = std::min(m, static_cast<diff_t>(std::floor(std::sqrt(static_cast<double>(m)) * 16.0)));
     ContainerIter block_end = m % k == 0 ? std::next(begin, k) : std::next(begin, m % k);
 
     while (true) {
         ContainerIter b = std::lower_bound(separator, end, *(block_end - 1));
         ContainerIter to = b - std::distance(block_end, separator);
-        
+    
         if (to > separator) {
             std::rotate(block_end - 1, separator, b);
         } else {
-            floating_hole(block_end, separator, std::distance(separator, b));
+            std::rotate(block_end - 1, separator, b);
             delta = (std::distance(separator, b) + delta) % k;
         }
-        
+
         hwang_lin_static_kutzner(begin, block_end - 1, to - 1);
 
         separator = b;
@@ -1019,22 +937,27 @@ void unstable_core_kim_kutzner(ContainerIter begin, ContainerIter separator, Con
 
         if (!(begin < separator)) break;
 
-        ContainerIter t = begin + k - delta;
+        ContainerIter t = begin + (k - delta);
         ContainerIter e = separator - delta;
         ContainerIter start_min;
+
         if (delta > 0) {
             start_min = search_minimal_block(k, t, e, e);
         } else {
-            start_min = search_minimal_block(k, t, e, begin);
+            start_min = search_minimal_block(k, begin + k, e, begin);
             t = begin;
         }
 
         if (start_min == e) {
-            block_swap(t, e, delta);
-            std::rotate(begin, t, begin + k);
-        } else {
-            block_swap(t, start_min, k);
-            std::rotate(begin, t, t + k);
+            if (!std::equal(t, t + delta, e)) {
+                block_swap(t, e, delta);
+                std::rotate(begin, t, begin + k);
+            }
+        } else if (start_min != t) {
+            if (!std::equal(t, t + k, start_min)) {
+                block_swap(t, start_min, k);
+                std::rotate(begin, t, t + k);
+            }
         }
 
         block_end = begin + k;
