@@ -1141,6 +1141,33 @@ void split_merge_alg(RandomIt first1, RandomIt first2, RandomIt last) {
                 last);
 }
 
+/*
+ * Algorithm: SplitMerge
+ *
+ * Publication:
+ *   Kim P. S., Kutzner A., A Simple Algorithm for Stable Minimum Storage Merging // 
+ *   Lecture Notes in Computer Science. – Vol. 4632. – Springer, 2007. – с.347-356.
+ *
+ * Implementation:
+ *   Developer: Sergei Gorlov
+ *
+ * Parameters:
+ *   IterContainer& a - container with a sorted sequence of smaller size.
+ *                      Elements must be in ascending order.
+ *                      IMPORTANT: The container must be accessed starting from its beginning.
+ *
+ *   IterContainer& b - container with a sorted sequence of larger size.
+ *                      Elements must be in ascending order.
+ *                      IMPORTANT: The container must be accessed starting from its beginning.
+ *
+ * Return Value:
+ *   IterContainer - merged container containing all elements from a and b, sorted in ascending order.
+ *
+ * Notes:
+ *   - Containers must support the methods size(), reserve(), begin(), end(), insert().
+ *   - It is assumed that the containers a and b are already sorted before calling the function.
+ * 
+ */
 template <typename IterContainer>
 IterContainer split_merge(IterContainer& a, IterContainer& b) {
     auto a_size = a.size();
