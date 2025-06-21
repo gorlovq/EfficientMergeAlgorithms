@@ -22,17 +22,19 @@ using std::bit_floor;
 
 constexpr int pow2(int t) { return 1<<t; } // Raise a number to the power of 2 using a bitwise operator
 
-// Insert element in contaiiner in specified range
+// Insert element in container in specified range
 template <typename IterContainer>
-int binary_insert(
-    IterContainer& c,
-    typename IterContainer::const_iterator begin,
-    typename IterContainer::const_iterator end,
-    typename IterContainer::value_type element
+std::size_t stable_insert(
+    IterContainer &v,
+    std::size_t left, std::size_t right,
+    const typename IterContainer::value_type &value
 ) {
-    auto insert_it = std::lower_bound(begin, end, element);
-    c.insert(insert_it, element);
-    return static_cast<int>(std::distance(c.cbegin(), insert_it));
+    auto first = v.begin() + left;
+    auto last  = v.begin() + right;
+
+    auto pos_it = std::lower_bound(first, last, value);
+    auto new_it = v.insert(pos_it, value);
+    return static_cast<std::size_t>(new_it - v.begin());
 }
 
 template <class It>

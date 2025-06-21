@@ -864,54 +864,75 @@ IterContainer hwang_lin_dynamic_stable_merge(IterContainer& a, IterContainer& b)
 
 // Fractile insertion (Minimean merging and sorting: An Algorithm, R. Michael Tanner)
 template <typename IterContainer>
-void fractile_insertion_alg(typename IterContainer::const_iterator a_begin, int m, IterContainer& b) {
-    // Step 1
-    int n = static_cast<int>(std::distance(b.begin(), b.end()));
-    int f = static_cast<int>(std::floor(static_cast<double>(m) / 2.0));
-    int k = static_cast<int>(std::floor(static_cast<double>(n) * (static_cast<double>(f)/(static_cast<double>(m) + 1.0))));
-    int alpha = static_cast<int>(std::floor((1.0/2.0) * std::log2(static_cast<double>(n) * ((1.0 + static_cast<double>(n))/static_cast<double>(m))) - 1.3));
-    int delta = std::pow(2, alpha);
-
-    // Step 2
-    if (*(a_begin + f) > *(b.begin() + k)) {
-        int prev_k;
-        do {
-            prev_k = k;
-            k += delta;
-        } while ((k < n) && (*(a_begin + f) >= *(b.begin() + k)));
-        if (k >= n) {
-            binary_insert(b, b.begin() + prev_k, b.begin() + n, *(a_begin + f));
-        } else {
-            binary_insert(b, b.begin() + prev_k, b.begin() + k, *(a_begin + f));
-        }
-
-        if (m > 2) {
-            fractile_insertion_alg(a_begin, f, b); // left part
-            fractile_insertion_alg(a_begin + f + 1, m - f - 1, b); // right part
-        } else if (m == 2) {
-            fractile_insertion_alg(a_begin, f, b); // left part
-        }
-        return;
-    } else {
-        int prev_k;
-        do {
-            prev_k = k;
-            k -= delta;
-        } while ((k >= 0) && (*(a_begin + f) <= *(b.begin() + k)));
-        if (k < 0) {
-            binary_insert(b, b.begin(), b.begin() + prev_k, *(a_begin + f));
-        } else {
-            binary_insert(b, b.begin() + k, b.begin() + prev_k, *(a_begin + f));
-        }
-
-        if (m > 2) {
-            fractile_insertion_alg(a_begin, f, b); // left part
-            fractile_insertion_alg(a_begin + f + 1, m - f - 1, b); // right part
-        } else if (m == 2) {
-            fractile_insertion_alg(a_begin, f, b); // left part
-        }
+void fractile_insertion_alg(
+    typename IterContainer::const_iterator  a_begin,   // begin of A
+    int                                     m,         // |A|
+    IterContainer                           &b,        // B
+    std::size_t                             l,         // left border of the insert
+    std::size_t                             r)         // right border of the insert (without)
+{
+    // trivial case
+    if (m == 0 || l == r) {
+        if (m) b.insert(b.begin() + l, a_begin, a_begin + m); // if there something left in A
         return;
     }
+
+    // general case
+    const int n = static_cast<int>(r - l);
+    const int f = m / 2;
+    int k = static_cast<int>(std::floor(static_cast<double>(n) * (static_cast<double>(f) / (m + 1.0))));
+    int alpha = static_cast<int>(std::floor(0.5 * std::log2(static_cast<double>(n) * ((1.0 + static_cast<double>(n)) / m)) - 1.3));
+    int delta = alpha < 0 ? 1 : 1 << alpha;
+
+    const auto A_piv = *(a_begin + f);
+
+    // relative to the range [l, r)
+    int left  = 0;
+    int right = n;
+
+    auto b_at = [&](int idx)->const auto& { return b[l + idx]; };
+
+    if (A_piv > b_at(k)) {                      // go right
+        left = k + 1;
+        int idx = k + delta;
+        while (idx < n && b_at(idx) < A_piv) {
+            left = idx + 1;
+            idx += delta;
+        }
+        right = std::min(idx, n);
+    } else {                                    // go left
+        right = k;
+        int idx = k - delta;
+        while (idx >= 0 && b_at(idx) >= A_piv) {
+            right = idx;
+            idx -= delta;
+        }
+        left = std::max(0, idx + 1);
+    }
+
+    // inserted pos
+    std::size_t pivot_idx = stable_insert(b, l + left, l + right, A_piv);
+
+    // left part
+    fractile_insertion_alg(
+        a_begin,
+        f,
+        b,              // [l, pivot_idx)
+        l,
+        pivot_idx
+    );
+
+    // number of elements how many the left recursion will add
+    const std::size_t added_left = static_cast<std::size_t>(f);
+
+    // right part
+    fractile_insertion_alg(
+        a_begin + f + 1,
+        m - f - 1,
+        b,              // (pivot_idx, r)
+        pivot_idx + added_left + 1,
+        r + added_left + 1
+    );
 }
 
 /*
@@ -942,19 +963,36 @@ void fractile_insertion_alg(typename IterContainer::const_iterator a_begin, int 
  *
  */
 template <typename IterContainer>
-IterContainer fractile_insertion_merge(const IterContainer& a, const IterContainer& b) {
-    auto [m, n] = std::array<const int, 2>{{static_cast<int>(std::distance(a.begin(), a.end())), static_cast<int>(std::distance(b.begin(), b.end()))}};
-    IterContainer r; // Resulting vector
+IterContainer fractile_insertion_merge(const IterContainer &a,
+                                       const IterContainer &b)
+{
+    using std::distance;
+
+    const int m = static_cast<int>(distance(a.begin(), a.end()));
+    const int n = static_cast<int>(distance(b.begin(), b.end()));
+
+    IterContainer r;
     r.reserve(m + n);
 
     if (m <= n) {
-        std::copy(b.begin(), b.end(), std::back_inserter(r)); // copy b to result
-        fractile_insertion_alg(a.begin(), m, r);
+        r.insert(r.end(), b.begin(), b.end());
+        fractile_insertion_alg(
+            a.begin(),
+            m,
+            r,
+            0,
+            r.size()
+        );
     } else {
-        std::copy(a.begin(), a.end(), std::back_inserter(r)); // copy a to result
-        fractile_insertion_alg(b.begin(), n, r);
+        r.insert(r.end(), a.begin(), a.end());
+        fractile_insertion_alg(
+            b.begin(),
+            n,
+            r,
+            0,
+            r.size()
+        );
     }
-
     return r;
 }
 
@@ -1178,7 +1216,7 @@ void unstable_core_kim_kutzner(ContainerIter begin, ContainerIter separator, Con
 
     diff_t delta = 0;
     // diff_t k = static_cast<diff_t>(std::floor(std::sqrt(static_cast<double>(m))));
-    diff_t k = std::min(m, static_cast<diff_t>(std::floor(std::sqrt(static_cast<double>(m)) * 32.0)));
+    diff_t k = std::min(m, static_cast<diff_t>(std::floor(std::sqrt(static_cast<double>(m)) * 8.0)));
     ContainerIter block_end = m % k == 0 ? std::next(begin, k) : std::next(begin, m % k);
 
     while (true) {

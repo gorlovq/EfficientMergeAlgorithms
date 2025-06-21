@@ -9,13 +9,10 @@
 
 - **Two Way Merge Algorithm**: The traditional method for merging two sorted arrays of lengths `n` and `m`.
 - **Binary Insertion for One Element**: An algorithm for inserting a single element into a sorted array using binary search to find the correct position.
-- **Hwang-Lin Merging Algorithm**: A classic algorithm designed to reduce the number of comparisons during the merge process.
-- **Binary Merge Algorithm**: An optimized algorithm using binary search for efficient merging.
-
-## Planned Implementations
-
-- **A Simple Algorithm for Stable Minimum Storage Merging** by Pok-Son Kim and Arne Kutzner: A sophisticated algorithm focusing on minimizing storage requirements during the merge process.
-- **Manacher Improved Hwang-Lin Version**: A further optimized version of the Hwang-Lin Merging Algorithm incorporating improvements by Manacher.
+- **Hwang-Lin Merging Algorithm** by Donald Knuth: A classic algorithm designed to reduce the number of comparisons during the merge process.
+- **Fractile Insertion Algorithm** by Michael Tanner: A stable merge by recursively median-inserting via exponential and binary search.
+- **SymMerge Algorithm** by Pok-Son Kim and Arne Kutzner: A sophisticated algorithm focusing on minimizing storage requirements during the merge process.
+- **Unstable Core Algorithm** by Pok-Son Kim and Arne Kutzner:In-place $\sqrt(m)$-block rotations with a floating hole, unstable but near-linear moves.
 
 ## Building and Running
 

@@ -1,341 +1,173 @@
+#!/usr/bin/env python3
 """
-Author: Sergei Gorlov.
-Description: Generates 2D plots from CSV results to visualize the number of comparisons and execution time for merge algorithms.
+Генерирует log-log график среднего числа сравнений / времени
+для алгоритмов слияния. Увеличены подписи minor-тиков
+(2×10⁴, 4×10⁴, 6×10⁴ …).
 """
 
-import pandas as pd
+# ─────────────────────────────────────────────────────────────
+# Импорт
+# ─────────────────────────────────────────────────────────────
+import argparse, glob, os, sys
 import matplotlib.pyplot as plt
 import numpy as np
-import os
-import glob
-import argparse
-import sys
-from matplotlib.ticker import LogLocator, FuncFormatter, ScalarFormatter
+import pandas as pd
+from matplotlib.ticker import FuncFormatter
 
-# ====================================================================
-# 2D Plot Generator for Merge Algorithm Comparison
-# ====================================================================
-# This script creates 2D plots comparing merge algorithm performance
-# with a double logarithmic scale (log-log).
-# Axis ranges are configurable via command line parameters.
-# ====================================================================
-
-# Parse command line arguments
-parser = argparse.ArgumentParser(description='Generate 2D comparison plot for merge algorithms')
-parser.add_argument('--m', type=int, default=1000, help='Fixed size of the first array (default: 1000)')
-parser.add_argument('--metric', type=str, choices=['comparisons', 'time'], default='comparisons', 
-                    help='Metric to plot: comparisons or execution time (default: comparisons)')
-parser.add_argument('--x-min', type=int, help='Minimum value for X-axis (default: auto-detected)')
-parser.add_argument('--x-max', type=int, help='Maximum value for X-axis (default: auto-detected)')
-parser.add_argument('--y-min', type=float, help='Minimum value for Y-axis (default: auto-detected)')
-parser.add_argument('--y-max', type=float, help='Maximum value for Y-axis (default: auto-detected)')
+# ─────────────────────────────────────────────────────────────
+# Аргументы
+# ─────────────────────────────────────────────────────────────
+parser = argparse.ArgumentParser(
+    description='Generate 2D comparison plot for merge algorithms'
+)
+parser.add_argument('--m', type=int, default=1000,
+                    help='Fixed size of the first array (default: 1000)')
+parser.add_argument('--metric', choices=['comparisons', 'time'],
+                    default='comparisons',
+                    help='Metric to plot (default: comparisons)')
+parser.add_argument('--x-min', type=int)
+parser.add_argument('--x-max', type=int)
+parser.add_argument('--y-min', type=float)
+parser.add_argument('--y-max', type=float)
 args = parser.parse_args()
 
-# Get CSV files and check if they exist
+# ─────────────────────────────────────────────────────────────
+# Данные
+# ─────────────────────────────────────────────────────────────
 csv_files = glob.glob('results/*.csv')
-
 if not csv_files:
-    print("Error: No CSV files found in the 'results' directory.")
-    sys.exit(1)
+    sys.exit("No CSV files found in 'results/'")
 
-# Create output directory
 plots_dir = 'plots'
-if not os.path.exists(plots_dir):
-    os.makedirs(plots_dir)
+os.makedirs(plots_dir, exist_ok=True)
 
-# Get parameters from command line
-FIXED_M = args.m
-METRIC = args.metric
+FIXED_M   = args.m
+METRIC    = args.metric
+COL_NAME  = 'Comparisons' if METRIC == 'comparisons' else 'Time(ms)'
 
-# Define colors for algorithms
 COLORS = {
-    'TwoWayMerge': '#4472C4',  # Blue
-    'FractialInsertionMerge': '#ED7D31',  # Orange
-    'HwangLinDynamicMerge': '#A5A5A5',  # Gray
-    'HwangLinDynamicStableMerge': '#FF0000',  # Red
-    'HwangLinKnuthMerge': '#FFC000',  # Yellow
-    'HwangLinStaticMerge': '#5B9BD5',  # Light Blue
-    'HwangLinStaticStableMerge': '#FF00FF',  # Pink
-    'SimpleKimKutznerMerge': '#70AD47', # Green
+    'TwoWayMerge': '#4472C4',
+    'FractialInsertionMerge': '#ED7D31',
+    'HwangLinDynamicMerge': '#A5A5A5',
+    'HwangLinDynamicStableMerge': '#FF0000',
+    'HwangLinKnuthMerge': '#FFC000',
+    'HwangLinStaticMerge': '#5B9BD5',
+    'HwangLinStaticStableMerge': '#FF00FF',
+    'SimpleKimKutznerMerge': '#70AD47',
 }
 
-# Initialize data containers
-algorithms = []
-sizes_n = []
-metrics_values = []
-found_m_value = False
+records = []
+for path in csv_files:
+    alg = os.path.splitext(os.path.basename(path))[0]
+    df = pd.read_csv(path)
+    df = df[df['M'] == FIXED_M]
+    if df.empty:
+        continue
+    for case in df['Case'].unique():
+        for _, row in df[df['Case'] == case].sort_values('N').iterrows():
+            records.append({'Algorithm': alg,
+                            'SizeN': row['N'],
+                            'MetricValue': row[COL_NAME]})
+plot_df = pd.DataFrame(records)
+if plot_df.empty:
+    sys.exit(f'No data with M={FIXED_M}')
 
-# Select metric column based on input
-metric_column = 'Comparisons' if METRIC == 'comparisons' else 'Time(ms)'
+# ─────────────────────────────────────────────────────────────
+# Диапазоны осей
+# ─────────────────────────────────────────────────────────────
+x_min = args.x_min or plot_df['SizeN'].min()
+x_max = args.x_max or plot_df['SizeN'].max()
+x_min = 10 ** np.floor(np.log10(x_min))
+x_max = 10 ** np.ceil(np.log10(x_max))
 
-# Process each algorithm's CSV file
-for csv_file in csv_files:
-    algorithm_name = os.path.splitext(os.path.basename(csv_file))[0]
-    print(f"Processing {algorithm_name} from {csv_file}")
-    
-    df = pd.read_csv(csv_file)
-    print(f"  Loaded {len(df)} rows from {csv_file}")
-    
-    # Filter data for the fixed M value
-    filtered_data = df[df['M'] == FIXED_M]
-    print(f"  After filtering for M={FIXED_M}, {len(filtered_data)} rows remain")
-    
-    if not filtered_data.empty:
-        found_m_value = True
-        # Process each test case
-        for case in filtered_data['Case'].unique():
-            case_data = filtered_data[filtered_data['Case'] == case]
-            print(f"  Processing case '{case}' with {len(case_data)} rows")
-            
-            # Sort by size of second array
-            case_data = case_data.sort_values(by='N')
-            
-            # Collect data points
-            for _, row in case_data.iterrows():
-                algorithms.append(algorithm_name)
-                sizes_n.append(row['N'])
-                metrics_values.append(row[metric_column])
-                print(f"  Added data point: N={row['N']}, {metric_column}={row[metric_column]}")
-    else:
-        print(f"No data with M={FIXED_M} found for {algorithm_name}")
+y_min = args.y_min if args.y_min is not None else plot_df['MetricValue'].min()*0.9
+if y_min <= 0:
+    y_min = plot_df['MetricValue'][plot_df['MetricValue']>0].min()*0.9
+y_max = args.y_max if args.y_max is not None else plot_df['MetricValue'].max()*1.05
 
-# Check if any data with the specified M value was found
-if not found_m_value:
-    print(f"Error: No data found with M={FIXED_M} in any algorithm.")
-    print("Available M values:")
-    
-    # Show available M values to help the user
-    all_m_values = set()
-    for csv_file in csv_files:
-        df = pd.read_csv(csv_file)
-        if 'M' in df.columns:
-            all_m_values.update(df['M'].unique())
-    
-    if all_m_values:
-        for m in sorted(all_m_values):
-            print(f"  - M={m}")
-    else:
-        print("  No M values found in CSV files.")
-    
-    sys.exit(1)
+# ─────────────────────────────────────────────────────────────
+# Шрифты
+# ─────────────────────────────────────────────────────────────
+TITLE_SIZE      = 28
+AXIS_LABEL_SIZE = 24
+TICK_LABEL_SIZE = 22     # ← применяется теперь и к minor-тикам
+LEGEND_SIZE     = 26
 
-# Create DataFrame for plotting
-plot_df = pd.DataFrame({
-    'Algorithm': algorithms,
-    'SizeN': sizes_n,
-    'MetricValue': metrics_values
-})
-
-# Determine X-axis range - use command line args if provided, otherwise auto-detect
-if args.x_min is not None:
-    x_min = args.x_min
-else:
-    x_min = plot_df['SizeN'].min() if not plot_df.empty else 100
-    # Round to nearest power of 10 below
-    x_min = 10 ** np.floor(np.log10(x_min))
-
-if args.x_max is not None:
-    x_max = args.x_max
-else:
-    x_max = plot_df['SizeN'].max() if not plot_df.empty else 100000
-    # Round to nearest power of 10 above
-    x_max = 10 ** np.ceil(np.log10(x_max))
-
-# Calculate Y-axis limits based on data
-if not plot_df.empty:
-    # Use command line args if provided, otherwise auto-detect
-    if args.y_min is not None:
-        y_min = args.y_min
-    else:
-        y_min = plot_df['MetricValue'].min() * 0.9
-        # Handle log scale requirements
-        if y_min <= 0:
-            y_min = plot_df['MetricValue'][plot_df['MetricValue'] > 0].min() * 0.9
-            if np.isnan(y_min):
-                y_min = 1  # Default if no valid value found
-        # Round to nearest power of 10 below
-        y_min = 10 ** np.floor(np.log10(y_min))
-        
-    if args.y_max is not None:
-        y_max = args.y_max
-    else:
-        y_max = plot_df['MetricValue'].max() * 1.1
-        # Round to nearest power of 10 above
-        y_max = 10 ** np.ceil(np.log10(y_max))
-else:
-    # Default limits if no data
-    if METRIC == 'comparisons':
-        y_min, y_max = 10, 1000000
-    else:
-        y_min, y_max = 0.001, 1000
-
-# Print summary of axis ranges
-print(f"\nAxis ranges:")
-print(f"  X-axis: {x_min} to {x_max}")
-print(f"  Y-axis: {y_min} to {y_max}")
-
-# Print summary of data
-print("\nData summary for the plot:")
-for algorithm in plot_df['Algorithm'].unique():
-    alg_data = plot_df[plot_df['Algorithm'] == algorithm]
-    print(f"Algorithm: {algorithm}, Data points: {len(alg_data)}")
-    print(f"  N values: {sorted(alg_data['SizeN'].unique())}")
-    print(f"  {metric_column} values: {sorted(alg_data['MetricValue'].unique())}")
-
-# Set larger font sizes for all text elements
-TITLE_SIZE = 22      # Title font size
-AXIS_LABEL_SIZE = 18 # Axis labels font size
-TICK_LABEL_SIZE = 14 # Tick labels font size
-LEGEND_SIZE = 16     # Legend font size
-
-# Initialize the figure
-fig, ax = plt.subplots(figsize=(16, 10), facecolor='white', dpi=100)
+# ─────────────────────────────────────────────────────────────
+# Фигура
+# ─────────────────────────────────────────────────────────────
+fig, ax = plt.subplots(figsize=(20, 11), dpi=100, facecolor='white')
 ax.set_facecolor('white')
+ax.set_xscale('log'); ax.set_yscale('log')
+ax.set_xlim(x_min, x_max); ax.set_ylim(y_min, y_max)
 
-# Set up log scales for both axes - Double logarithmic scale
-ax.set_xscale('log')
-ax.set_yscale('log')
+# Формат тиков
+def fmt_log(x, _p): return f'{x/1000:g}k' if x >= 1000 else f'{x:g}'
+ax.xaxis.set_major_formatter(FuncFormatter(fmt_log))
+ax.yaxis.set_major_formatter(FuncFormatter(fmt_log))
 
-# Apply axis limits
-ax.set_xlim(x_min, x_max)
-ax.set_ylim(y_min, y_max)
+# 1) major-тики
+ax.tick_params(axis='both', which='major',
+               labelsize=TICK_LABEL_SIZE, pad=8)
+# 2) minor-тики (то, что нужно увеличить)
+ax.tick_params(axis='both', which='minor',
+               labelsize=TICK_LABEL_SIZE, pad=5)
 
-# Configure log scale ticks based on actual range
-x_powers = range(int(np.log10(x_min)), int(np.log10(x_max)) + 1)
-y_powers = range(int(np.log10(y_min)), int(np.log10(y_max)) + 1)
+# 3) гарантируем размер + bold для всех уже созданных лэйблов
+for lbl in (ax.get_xticklabels(minor=False) + ax.get_xticklabels(minor=True) +
+            ax.get_yticklabels(minor=False) + ax.get_yticklabels(minor=True)):
+    lbl.set_fontsize(TICK_LABEL_SIZE)
+    lbl.set_fontweight('bold')
 
-# Generate major tick positions at powers of 10
-x_ticks = [10**i for i in x_powers]
-y_ticks = [10**i for i in y_powers]
+ax.grid(True, which='major', color='#CCC', linewidth=0.8)
+ax.grid(True, which='minor', color='#EEE', linestyle=':', linewidth=0.5)
 
-# Add intermediate log ticks on both axes
-x_minor_ticks = []
-for major in x_ticks:
-    for i in range(2, 10):
-        x_minor_ticks.append(major * i)
-y_minor_ticks = []
-for major in y_ticks:
-    for i in range(2, 10):
-        y_minor_ticks.append(major * i)
+# Подписи осей
+ax.set_xlabel('РАЗМЕР ВТОРОГО МАССИВА',
+              fontsize=AXIS_LABEL_SIZE, fontweight='bold')
+ax.set_ylabel('КОЛИЧЕСТВО СРАВНЕНИЙ' if METRIC == 'comparisons'
+              else 'ВРЕМЯ ВЫПОЛНЕНИЯ (мс)',
+              fontsize=AXIS_LABEL_SIZE, fontweight='bold')
 
-# Set the ticks
-ax.set_xticks(x_ticks)
-ax.set_yticks(y_ticks)
+# Линии графика
+for alg in plot_df['Algorithm'].unique():
+    sub = plot_df[plot_df['Algorithm'] == alg].sort_values('SizeN')
+    name = {'SimpleKimKutznerMerge':'KimKutznerMerge',
+            'FractialInsertionMerge':'FractialInsertion'}.get(alg, alg)
+    ax.plot(sub['SizeN'], sub['MetricValue'],
+            label=name,
+            color=COLORS.get(alg, 'black'),
+            linewidth=3,
+            marker='o', markersize=8)
 
-# Formatter for clean tick labels
-def format_log_ticks(x, pos):
-    if x >= 1000:
-        return f'{int(x/1000)}k' if x % 1000 == 0 else f'{x/1000:.1f}k'
-    else:
-        return f'{int(x)}' if x == int(x) else f'{x:.1f}'
+# Заголовок
+title = (f'Среднее количество сравнений при m = {FIXED_M}'
+         if METRIC == 'comparisons'
+         else f'Среднее время выполнения при m = {FIXED_M}')
+ax.set_title(title, fontsize=TITLE_SIZE, fontweight='bold', pad=16)
 
-# Apply formatters
-ax.xaxis.set_major_formatter(FuncFormatter(format_log_ticks))
-ax.yaxis.set_major_formatter(FuncFormatter(format_log_ticks))
+# Легенда
+lgd = ax.legend(fontsize=LEGEND_SIZE,
+                loc='upper center', bbox_to_anchor=(0.5, -0.24),
+                ncol=3, frameon=True, facecolor='white',
+                handlelength=3.5, columnspacing=4,
+                handletextpad=1.2, borderpad=1.4)
+lgd.get_frame().set_linewidth(1.5); lgd.get_frame().set_edgecolor('black')
 
-# Style the tick labels with larger font size
-ax.tick_params(axis='both', which='major', labelsize=TICK_LABEL_SIZE)
-plt.setp(ax.get_xticklabels(), fontweight='bold')
-plt.setp(ax.get_yticklabels(), fontweight='bold')
-
-# Add grid for log scale - both major and minor
-ax.grid(True, which='major', color='#CCCCCC', linestyle='-', linewidth=0.8)
-ax.grid(True, which='minor', color='#EEEEEE', linestyle=':', linewidth=0.5)
-
-# Add axis labels with larger font size
-ax.set_xlabel('РАЗМЕР ВТОРОГО МАССИВА', fontsize=AXIS_LABEL_SIZE, fontweight='bold', labelpad=15)
-
-# Set Y-axis label based on metric
-if METRIC == 'comparisons':
-    y_label = 'КОЛИЧЕСТВО СРАВНЕНИЙ'
-else:
-    y_label = 'ВРЕМЯ ВЫПОЛНЕНИЯ (мс)'
-
-ax.set_ylabel(y_label, fontsize=AXIS_LABEL_SIZE, fontweight='bold', labelpad=15, rotation=90)
-
-# Plot each algorithm with thicker lines for better visibility
-for algorithm in plot_df['Algorithm'].unique():
-    alg_data = plot_df[plot_df['Algorithm'] == algorithm]
-    
-    # Sort by N for correct line
-    alg_data = alg_data.sort_values(by='SizeN')
-    
-    # Get color for algorithm
-    color = COLORS.get(algorithm, 'black')
-    
-    # Create shortened display names for algorithms with long names
-    display_name = algorithm
-    if algorithm == 'SimpleKimKutznerMerge':
-        display_name = 'KimKutznerMerge'
-    elif algorithm == 'FractialInsertionMerge':
-        display_name = 'FractialInsertion'
-    
-    # Create the plot with thicker lines
-    ax.plot(alg_data['SizeN'], alg_data['MetricValue'], 
-            label=display_name,  # Use shortened name
-            color=color,
-            linewidth=3.0,  # Increased line width
-            marker='o',
-            markersize=6)   # Increased marker size
-
-# Set title with larger font size
-if METRIC == 'comparisons':
-    title = f'Среднее количество сравнений, совершаемых\nразными алгоритмами при размере первого\nмассива m = {FIXED_M}'
-else:
-    title = f'Среднее время выполнения\nразных алгоритмами при размере первого\nмассива m = {FIXED_M}'
-
-ax.set_title(title, fontsize=TITLE_SIZE, fontweight='bold', pad=20)
-
-# Create formatter for Y-axis (with scientific notation for large numbers)
-if METRIC == 'comparisons' and y_max > 100000:
-    def sci_format(x, pos):
-        if x >= 1000:
-            return f'{x/1000:.0f}k' if x % 1000 == 0 else f'{x/1000:.1f}k'
-        else:
-            return f'{x:.0f}'
-    ax.yaxis.set_major_formatter(FuncFormatter(sci_format))
-
-# Add legend with larger font size and better spacing
-legend = ax.legend(fontsize=LEGEND_SIZE, 
-                   loc='upper center',
-                   bbox_to_anchor=(0.5, -0.18),  # Lower position
-                   frameon=True, 
-                   facecolor='white', 
-                   ncol=3,  # 3 columns but with better spacing
-                   handlelength=2.5,  # Longer lines in the legend
-                   columnspacing=3.0,  # Much more space between columns
-                   handletextpad=0.8,  # Space between the line and the text
-                   borderpad=1.0)  # Padding inside the legend frame
-
-# Make legend edges more visible
-legend.get_frame().set_linewidth(1.5)
-legend.get_frame().set_edgecolor('black')
-
-# Adjust the figure size to be wider for better legend display
-fig.set_size_inches(18, 10)  # Wider figure
-
-# Style background
-ax.patch.set_facecolor('white')
-fig.patch.set_facecolor('white')
-
-# Add border
 for spine in ax.spines.values():
     spine.set_visible(True)
+    spine.set_linewidth(1.5)
     spine.set_color('black')
-    spine.set_linewidth(1.5)  # Thicker border
 
-# Adjust layout
+# ─────────────────────────────────────────────────────────────
+# Сохранение
+# ─────────────────────────────────────────────────────────────
 plt.tight_layout()
-plt.subplots_adjust(bottom=0.30, left=0.1, right=0.9)  # Adjusted bottom margin
+plt.subplots_adjust(top=0.92, bottom=0.30, left=0.1, right=0.95)
 
-# Create filename based on metric
-if METRIC == 'comparisons':
-    filename = f'comparison_fixed_m_{FIXED_M}.png'
-else:
-    filename = f'time_fixed_m_{FIXED_M}.png'
-
-# Save the plot
-plt.savefig(f'{plots_dir}/{filename}', dpi=300, bbox_inches='tight', facecolor='white')
+fname = (f'comparison_fixed_m_{FIXED_M}.png'
+         if METRIC == 'comparisons'
+         else f'time_fixed_m_{FIXED_M}.png')
+plt.savefig(os.path.join(plots_dir, fname), dpi=300, bbox_inches='tight')
 plt.close()
-
-print(f"2D plot of {METRIC} with fixed M={FIXED_M} has been generated with enlarged axis labels and legend") 
+print(f'Plot saved to {plots_dir}/{fname}')
