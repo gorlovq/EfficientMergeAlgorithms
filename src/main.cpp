@@ -12,6 +12,9 @@
 #include "framework/simple_kim_kutzner_merge.hpp"
 #include "framework/algorithm_tester.hpp"
 #include "framework/two_way_merge.hpp"
+#include "framework/split_merge.hpp"   
+#include "framework/std_merge.hpp"
+
 
 enum class OutputFormat {
     Console,
@@ -45,52 +48,73 @@ int main(int argc, char* argv[]) {
     // This provides a thorough assessment of algorithm performance across different scale factors
     // ====================================================================
 
-    // Fixed first array (M=10^2) with varying second array (N) sizes from 10^2 to 10^5
-    tester.addScenario({100, 100, CornerCaseType::RANDOM, 0, 1000000, 5, 5});     // N=10^2
-    tester.addScenario({100, 500, CornerCaseType::RANDOM, 0, 1000000, 5, 5});     // N=5×10^2
-    tester.addScenario({100, 1000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});    // N=10^3
-    tester.addScenario({100, 5000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});    // N=5×10^3
-    tester.addScenario({100, 10000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});   // N=10^4
-    tester.addScenario({100, 50000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});   // N=5×10^4
-    tester.addScenario({100, 100000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});  // N=10^5
+    // // Fixed first array (M=10^2) with varying second array (N) sizes from 10^2 to 10^5
+    // tester.addScenario({100, 100, CornerCaseType::RANDOM, 0, 1000000, 5, 5});     // N=10^2
+    // tester.addScenario({100, 500, CornerCaseType::RANDOM, 0, 1000000, 5, 5});     // N=5×10^2
+    // tester.addScenario({100, 1000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});    // N=10^3
+    // tester.addScenario({100, 5000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});    // N=5×10^3
+    // tester.addScenario({100, 10000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});   // N=10^4
+    // tester.addScenario({100, 50000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});   // N=5×10^4
+    // tester.addScenario({100, 100000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});  // N=10^5
 
-    // Fixed first array (M=1000, 10^3) with varying second array (N) sizes from 10^2 to 10^5
-    tester.addScenario({1000, 100, CornerCaseType::RANDOM, 0, 1000000, 5, 5});     // N=10^2
-    tester.addScenario({1000, 500, CornerCaseType::RANDOM, 0, 1000000, 5, 5});     // N=5×10^2
-    tester.addScenario({1000, 1000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});    // N=10^3
-    tester.addScenario({1000, 5000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});    // N=5×10^3
-    tester.addScenario({1000, 10000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});   // N=10^4
-    tester.addScenario({1000, 50000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});   // N=5×10^4
-    tester.addScenario({1000, 100000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});  // N=10^5
+    // // Fixed first array (M=1000, 10^3) with varying second array (N) sizes from 10^2 to 10^5
+    // tester.addScenario({1000, 100, CornerCaseType::RANDOM, 0, 1000000, 5, 5});     // N=10^2
+    // tester.addScenario({1000, 500, CornerCaseType::RANDOM, 0, 1000000, 5, 5});     // N=5×10^2
+    // tester.addScenario({1000, 1000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});    // N=10^3
+    // tester.addScenario({1000, 5000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});    // N=5×10^3
+    // tester.addScenario({1000, 10000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});   // N=10^4
+    // tester.addScenario({1000, 50000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});   // N=5×10^4
+    // tester.addScenario({1000, 100000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});  // N=10^5
 
-    // Fixed first array (M=10000, 10^4) with varying second array (N) sizes from 10^2 to 10^5
-    tester.addScenario({10000, 100, CornerCaseType::RANDOM, 0, 1000000, 5, 5});     // N=10^2
-    tester.addScenario({10000, 500, CornerCaseType::RANDOM, 0, 1000000, 5, 5});     // N=5×10^2
-    tester.addScenario({10000, 1000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});    // N=10^3
-    tester.addScenario({10000, 5000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});    // N=5×10^3
-    tester.addScenario({10000, 10000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});   // N=10^4
-    tester.addScenario({10000, 50000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});   // N=5×10^4
-    tester.addScenario({10000, 100000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});  // N=10^5
+    // // Fixed first array (M=10000, 10^4) with varying second array (N) sizes from 10^2 to 10^5
+    // tester.addScenario({10000, 100, CornerCaseType::RANDOM, 0, 1000000, 5, 5});     // N=10^2
+    // tester.addScenario({10000, 500, CornerCaseType::RANDOM, 0, 1000000, 5, 5});     // N=5×10^2
+    // tester.addScenario({10000, 1000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});    // N=10^3
+    // tester.addScenario({10000, 5000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});    // N=5×10^3
+    // tester.addScenario({10000, 10000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});   // N=10^4
+    // tester.addScenario({10000, 50000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});   // N=5×10^4
+    // tester.addScenario({10000, 100000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});  // N=10^5
 
-    // Fixed first array (M=100000, 10^5) with varying second array (N) sizes from 10^2 to 10^5
-    tester.addScenario({100000, 100, CornerCaseType::RANDOM, 0, 1000000, 5, 5});     // N=10^2
-    tester.addScenario({100000, 500, CornerCaseType::RANDOM, 0, 1000000, 5, 5});     // N=5×10^2
-    tester.addScenario({100000, 1000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});    // N=10^3
-    tester.addScenario({100000, 5000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});    // N=5×10^3
-    tester.addScenario({100000, 10000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});   // N=10^4
-    tester.addScenario({100000, 50000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});   // N=5×10^4
-    tester.addScenario({100000, 100000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});  // N=10^5
+    // // Fixed first array (M=100000, 10^5) with varying second array (N) sizes from 10^2 to 10^5
+    // tester.addScenario({100000, 100, CornerCaseType::RANDOM, 0, 1000000, 5, 5});     // N=10^2
+    // tester.addScenario({100000, 500, CornerCaseType::RANDOM, 0, 1000000, 5, 5});     // N=5×10^2
+    // tester.addScenario({100000, 1000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});    // N=10^3
+    // tester.addScenario({100000, 5000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});    // N=5×10^3
+    // tester.addScenario({100000, 10000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});   // N=10^4
+    // tester.addScenario({100000, 50000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});   // N=5×10^4
+    // tester.addScenario({100000, 100000, CornerCaseType::RANDOM, 0, 1000000, 5, 5});  // N=10^5
+
+    // Test cases from 5k to 100k with step 5k
+    for (int m = 5000; m <= 100000; m += 5000) {
+        for (int n = 5000; n <= 100000; n += 5000) {
+            tester.addScenario({m, n, CornerCaseType::RANDOM, 0, 1000000, 5, 5});
+        }
+    }
+
+    // Test cases from 0 to 5k with step 1k
+    // for (int n = 0; n <= 5000; n += 1000) {
+    //     tester.addScenario({10000, n, CornerCaseType::RANDOM, 0, 1000000, 5, 5});
+    // }
+    
+    // Test cases from 100k to 1000k with step 20k
+    // for (int m = 100000; m <= 1000000; m += 20000) {
+    //     for (int n = 100000; n <= 1000000; n += 20000) {
+    //         tester.addScenario({m, n, CornerCaseType::RANDOM, 0, 1000000, 5, 5});
+    //     }
+    // }
 
     std::vector<std::unique_ptr<MergeAlgorithm>> algorithms;
     algorithms.push_back(std::make_unique<TwoWayMergeAlgorithm>());
     algorithms.push_back(std::make_unique<HwangLinDynamicMergeAlgorithm>());
-    algorithms.push_back(std::make_unique<HwangLinDynamicStableMergeAlgorithm>());
-    algorithms.push_back(std::make_unique<HwangLinKnuthMergeAlgorithm>());
+    // algorithms.push_back(std::make_unique<HwangLinDynamicStableMergeAlgorithm>());
+    // algorithms.push_back(std::make_unique<HwangLinKnuthMergeAlgorithm>());
     algorithms.push_back(std::make_unique<HwangLinStaticMergeAlgorithm>());
     algorithms.push_back(std::make_unique<HwangLinStaticStableMergeAlgorithm>());
-    algorithms.push_back(std::make_unique<FractialInsertionMergeAlgorithm>());
-    algorithms.push_back(std::make_unique<SimpleKimKutznerMergeAlgorithm>());
-
+    // algorithms.push_back(std::make_unique<FractialInsertionMergeAlgorithm>());
+    // algorithms.push_back(std::make_unique<SimpleKimKutznerMergeAlgorithm>());
+    algorithms.push_back(std::make_unique<SplitMergeAlgorithm>());
+    // algorithms.push_back(std::make_unique<StdMergeAlgorithm>());
+    
     const std::string separator(REPORT_WIDTH, '=');
 
     // Iterate over each algorithm and run the tests.

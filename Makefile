@@ -22,7 +22,7 @@ VENV_PYTHON = $(VENV_DIR)/bin/python3
 VENV_PIP = $(VENV_DIR)/bin/pip
 
 # Default value for fixed array size M
-M ?= 1000
+M ?= 5000
 
 # Source files
 SOURCES = $(wildcard $(SRC_DIR)/*.cpp) $(wildcard $(SRC_DIR)/framework/*.cpp)

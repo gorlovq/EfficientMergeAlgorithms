@@ -51,12 +51,13 @@ METRIC = args.metric
 COLORS = {
     'TwoWayMerge': '#4472C4',  # Blue
     'FractialInsertionMerge': '#ED7D31',  # Orange
-    'HwangLinDynamicMerge': '#A5A5A5',  # Gray
-    'HwangLinDynamicStableMerge': '#FF0000',  # Red
+    'HwangLinDynamicMerge': '#FF0000',  # Gray
+    'HwangLinDynamicStableMerge': '#70AD47',  # Red
     'HwangLinKnuthMerge': '#FFC000',  # Yellow
-    'HwangLinStaticMerge': '#5B9BD5',  # Light Blue
+    'HwangLinStaticMerge': '#70AD47',  # Light Blue
     'HwangLinStaticStableMerge': '#FF00FF',  # Pink
     'SimpleKimKutznerMerge': '#70AD47', # Green
+    'StdMerge': '#FF00FF', # Pink
 }
 
 # Initialize data containers
@@ -131,15 +132,20 @@ if args.x_min is not None:
     x_min = args.x_min
 else:
     x_min = plot_df['SizeN'].min() if not plot_df.empty else 100
-    # Round to nearest power of 10 below
-    x_min = 10 ** np.floor(np.log10(x_min))
+    # Ensure x_min is positive for log scale
+    if x_min <= 0:
+        # Find the smallest positive value
+        positive_values = plot_df['SizeN'][plot_df['SizeN'] > 0]
+        if not positive_values.empty:
+            x_min = positive_values.min()
+        else:
+            x_min = 1  # Default minimum for log scale
 
 if args.x_max is not None:
     x_max = args.x_max
 else:
     x_max = plot_df['SizeN'].max() if not plot_df.empty else 100000
-    # Round to nearest power of 10 above
-    x_max = 10 ** np.ceil(np.log10(x_max))
+    # Не округлять вверх, а брать максимальное значение из данных
 
 # Calculate Y-axis limits based on data
 if not plot_df.empty:
@@ -160,12 +166,10 @@ if not plot_df.empty:
         y_max = args.y_max
     else:
         y_max = plot_df['MetricValue'].max() * 1.1
-        # Round to nearest power of 10 above
-        y_max = 10 ** np.ceil(np.log10(y_max))
 else:
     # Default limits if no data
     if METRIC == 'comparisons':
-        y_min, y_max = 10, 1000000
+        y_min, y_max = 10, 100000
     else:
         y_min, y_max = 0.001, 1000
 
@@ -219,7 +223,14 @@ for major in y_ticks:
         y_minor_ticks.append(major * i)
 
 # Set the ticks
-ax.set_xticks(x_ticks)
+x_ticks = sorted(plot_df['SizeN'].unique())
+xticks_to_show = [v for v in [25000, 50000, 75000, 100000] if v in x_ticks]
+ax.set_xticks(xticks_to_show)
+
+# Вернуть отображение всех уникальных значений по оси Y
+# Добавим дополнительные тики 25k, 50k, 75k
+extra_yticks = [25000, 50000, 75000]
+y_ticks = sorted(set(y_ticks).union(extra_yticks))
 ax.set_yticks(y_ticks)
 
 # Formatter for clean tick labels
@@ -233,9 +244,9 @@ def format_log_ticks(x, pos):
 ax.xaxis.set_major_formatter(FuncFormatter(format_log_ticks))
 ax.yaxis.set_major_formatter(FuncFormatter(format_log_ticks))
 
-# Style the tick labels with larger font size
+# Style the tick labels with larger font size и наклон
 ax.tick_params(axis='both', which='major', labelsize=TICK_LABEL_SIZE)
-plt.setp(ax.get_xticklabels(), fontweight='bold')
+plt.setp(ax.get_xticklabels(), rotation=30, ha='right', fontweight='bold')
 plt.setp(ax.get_yticklabels(), fontweight='bold')
 
 # Add grid for log scale - both major and minor
@@ -254,29 +265,73 @@ else:
 ax.set_ylabel(y_label, fontsize=AXIS_LABEL_SIZE, fontweight='bold', labelpad=15, rotation=90)
 
 # Plot each algorithm with thicker lines for better visibility
-for algorithm in plot_df['Algorithm'].unique():
+algorithms_to_plot = list(plot_df['Algorithm'].unique())
+if 'TwoWayMerge' in algorithms_to_plot:
+    algorithms_to_plot.remove('TwoWayMerge')
+# Сначала рисуем все, кроме TwoWayMerge
+for algorithm in algorithms_to_plot:
     alg_data = plot_df[plot_df['Algorithm'] == algorithm]
-    
-    # Sort by N for correct line
     alg_data = alg_data.sort_values(by='SizeN')
-    
-    # Get color for algorithm
     color = COLORS.get(algorithm, 'black')
-    
-    # Create shortened display names for algorithms with long names
     display_name = algorithm
     if algorithm == 'SimpleKimKutznerMerge':
         display_name = 'KimKutznerMerge'
     elif algorithm == 'FractialInsertionMerge':
         display_name = 'FractialInsertion'
-    
-    # Create the plot with thicker lines
-    ax.plot(alg_data['SizeN'], alg_data['MetricValue'], 
-            label=display_name,  # Use shortened name
+    # Индивидуальные стили для HwangLinStaticMerge и HwangLinStaticStableMerge
+    if algorithm == 'HwangLinStaticMerge':
+        linestyle = '-'
+        linewidth = 5.0
+        marker = 'o'
+        markersize = 7
+        zorder = 5
+    elif algorithm == 'HwangLinStaticStableMerge':
+        linestyle = (0, (5, 5))  # Штрихпунктирная линия
+        linewidth = 5.0
+        marker = 's'
+        markersize = 8
+        zorder = 6
+    elif algorithm == 'HwangLinDynamicMerge':
+        linestyle = '-'
+        linewidth = 5.0
+        marker = 'o'
+        markersize = 7
+        zorder = 5
+    elif algorithm == 'HwangLinDynamicStableMerge':
+        linestyle = (0, (5, 5))  # Штрихпунктирная линия
+        linewidth = 5.0
+        marker = 's'
+        markersize = 8
+        zorder = 6
+    else:
+        linestyle = '-'
+        linewidth = 5.0
+        marker = 'o'
+        markersize = 6
+        zorder = 1
+    ax.plot(alg_data['SizeN'], alg_data['MetricValue'],
+            label=display_name,
             color=color,
-            linewidth=3.0,  # Increased line width
+            linewidth=linewidth,
+            marker=marker,
+            markersize=markersize,
+            linestyle=linestyle,
+            zorder=zorder)
+# Теперь рисуем TwoWayMerge поверх всех
+if 'TwoWayMerge' in plot_df['Algorithm'].unique():
+    alg_data = plot_df[plot_df['Algorithm'] == 'TwoWayMerge']
+    alg_data = alg_data.sort_values(by='SizeN')
+    color = COLORS.get('TwoWayMerge', 'black')
+    display_name = 'TwoWayMerge'
+    linestyle = '-'
+    ax.plot(alg_data['SizeN'], alg_data['MetricValue'], 
+            label=display_name,
+            color=color,
+            linewidth=5.0,
             marker='o',
-            markersize=6)   # Increased marker size
+            markersize=6,
+            linestyle=linestyle,
+            zorder=10)  # Поверх остальных
 
 # Set title with larger font size
 if METRIC == 'comparisons':
