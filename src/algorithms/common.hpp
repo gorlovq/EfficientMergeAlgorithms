@@ -7,6 +7,8 @@
 
 #include <bit>
 #include <algorithm>
+#include <functional>
+#include <iterator>
 
 
 // Helper function: bit_floor for compilers without <bit>
@@ -20,16 +22,53 @@ using std::bit_floor;
 
 constexpr int pow2(int t) { return 1<<t; } // Raise a number to the power of 2 using a bitwise operator
 
-// Insert element in contaiiner in specified range
+// Insert element in container in specified range
 template <typename IterContainer>
-void binary_insert(
-    IterContainer& c,
-    typename IterContainer::const_iterator begin,
-    typename IterContainer::const_iterator end,
-    typename IterContainer::value_type element
+std::size_t stable_insert(
+    IterContainer &v,
+    std::size_t left, std::size_t right,
+    const typename IterContainer::value_type &value
 ) {
-    auto inser_it = std::lower_bound(begin, end, element);
-    c.insert(inser_it, element);
+    auto first = v.begin() + left;
+    auto last  = v.begin() + right;
+
+    auto pos_it = std::lower_bound(first, last, value);
+    auto new_it = v.insert(pos_it, value);
+    return static_cast<std::size_t>(new_it - v.begin());
+}
+
+template <class It>
+void block_swap(It left, It right,
+                typename std::iterator_traits<It>::difference_type k) {
+    for (typename std::iterator_traits<It>::difference_type i = 0; i < k; ++i, ++left, ++right)
+        std::iter_swap(left, right);
+}
+
+template <class It, class Comp = std::less<>>
+It search_minimal_block(std::ptrdiff_t k,
+                        It t,
+                        It e,
+                        It extra,
+                        Comp comp = Comp{}) {
+    It best = extra;
+    auto best_first = *best;
+    auto best_last  = *(best + std::min(k, std::distance(best, e)) - 1);
+
+    const std::ptrdiff_t limit = std::distance(t, e);
+    for (std::ptrdiff_t offset = 0; offset + k <= limit; offset += k) {
+        It cur = t + offset;
+        auto cur_first = *cur;
+        auto cur_last  = *(cur + k - 1);
+
+        if (comp(cur_first, best_first) ||
+           (!comp(best_first, cur_first) && comp(cur_last, best_last))) {
+            best = cur;
+            best_first = cur_first;
+            best_last  = cur_last;
+        }
+    }
+
+    return best;
 }
 
 // Insert element and copy elements before insertion point using lower_bound.
