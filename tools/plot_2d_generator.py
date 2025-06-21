@@ -1,13 +1,9 @@
 #!/usr/bin/env python3
 """
-Генерирует log-log график среднего числа сравнений / времени
-для алгоритмов слияния. Увеличены подписи minor-тиков
-(2×10⁴, 4×10⁴, 6×10⁴ …).
+Author: Sergei Gorlov (edits by Igor Stikentzin).
+Description: Generates 2D plots from CSV results to visualize the number of comparisons and execution time for merge algorithms.
 """
 
-# ─────────────────────────────────────────────────────────────
-# Импорт
-# ─────────────────────────────────────────────────────────────
 import argparse, glob, os, sys
 import matplotlib.pyplot as plt
 import numpy as np
@@ -15,7 +11,7 @@ import pandas as pd
 from matplotlib.ticker import FuncFormatter
 
 # ─────────────────────────────────────────────────────────────
-# Аргументы
+# Args
 # ─────────────────────────────────────────────────────────────
 parser = argparse.ArgumentParser(
     description='Generate 2D comparison plot for merge algorithms'
@@ -32,7 +28,7 @@ parser.add_argument('--y-max', type=float)
 args = parser.parse_args()
 
 # ─────────────────────────────────────────────────────────────
-# Данные
+# Data
 # ─────────────────────────────────────────────────────────────
 csv_files = glob.glob('results/*.csv')
 if not csv_files:
@@ -73,7 +69,7 @@ if plot_df.empty:
     sys.exit(f'No data with M={FIXED_M}')
 
 # ─────────────────────────────────────────────────────────────
-# Диапазоны осей
+# Axis ranges
 # ─────────────────────────────────────────────────────────────
 x_min = args.x_min or plot_df['SizeN'].min()
 x_max = args.x_max or plot_df['SizeN'].max()
@@ -86,34 +82,33 @@ if y_min <= 0:
 y_max = args.y_max if args.y_max is not None else plot_df['MetricValue'].max()*1.05
 
 # ─────────────────────────────────────────────────────────────
-# Шрифты
+# Fonts
 # ─────────────────────────────────────────────────────────────
 TITLE_SIZE      = 28
 AXIS_LABEL_SIZE = 24
-TICK_LABEL_SIZE = 22     # ← применяется теперь и к minor-тикам
+TICK_LABEL_SIZE = 22
 LEGEND_SIZE     = 26
 
 # ─────────────────────────────────────────────────────────────
-# Фигура
+# Figure
 # ─────────────────────────────────────────────────────────────
 fig, ax = plt.subplots(figsize=(20, 11), dpi=100, facecolor='white')
 ax.set_facecolor('white')
 ax.set_xscale('log'); ax.set_yscale('log')
 ax.set_xlim(x_min, x_max); ax.set_ylim(y_min, y_max)
 
-# Формат тиков
+# Tick format
 def fmt_log(x, _p): return f'{x/1000:g}k' if x >= 1000 else f'{x:g}'
 ax.xaxis.set_major_formatter(FuncFormatter(fmt_log))
 ax.yaxis.set_major_formatter(FuncFormatter(fmt_log))
 
-# 1) major-тики
+# 1) major-ticks
 ax.tick_params(axis='both', which='major',
                labelsize=TICK_LABEL_SIZE, pad=8)
-# 2) minor-тики (то, что нужно увеличить)
+# 2) minor-ticks
 ax.tick_params(axis='both', which='minor',
                labelsize=TICK_LABEL_SIZE, pad=5)
 
-# 3) гарантируем размер + bold для всех уже созданных лэйблов
 for lbl in (ax.get_xticklabels(minor=False) + ax.get_xticklabels(minor=True) +
             ax.get_yticklabels(minor=False) + ax.get_yticklabels(minor=True)):
     lbl.set_fontsize(TICK_LABEL_SIZE)
@@ -122,14 +117,14 @@ for lbl in (ax.get_xticklabels(minor=False) + ax.get_xticklabels(minor=True) +
 ax.grid(True, which='major', color='#CCC', linewidth=0.8)
 ax.grid(True, which='minor', color='#EEE', linestyle=':', linewidth=0.5)
 
-# Подписи осей
+# Axis signs
 ax.set_xlabel('РАЗМЕР ВТОРОГО МАССИВА',
               fontsize=AXIS_LABEL_SIZE, fontweight='bold')
 ax.set_ylabel('КОЛИЧЕСТВО СРАВНЕНИЙ' if METRIC == 'comparisons'
               else 'ВРЕМЯ ВЫПОЛНЕНИЯ (мс)',
               fontsize=AXIS_LABEL_SIZE, fontweight='bold')
 
-# Линии графика
+# Graph lines
 for alg in plot_df['Algorithm'].unique():
     sub = plot_df[plot_df['Algorithm'] == alg].sort_values('SizeN')
     name = {'SimpleKimKutznerMerge':'KimKutznerMerge',
@@ -140,13 +135,13 @@ for alg in plot_df['Algorithm'].unique():
             linewidth=3,
             marker='o', markersize=8)
 
-# Заголовок
+# Title
 title = (f'Среднее количество сравнений при m = {FIXED_M}'
          if METRIC == 'comparisons'
          else f'Среднее время выполнения при m = {FIXED_M}')
 ax.set_title(title, fontsize=TITLE_SIZE, fontweight='bold', pad=16)
 
-# Легенда
+# Legend
 lgd = ax.legend(fontsize=LEGEND_SIZE,
                 loc='upper center', bbox_to_anchor=(0.5, -0.24),
                 ncol=3, frameon=True, facecolor='white',
@@ -160,7 +155,7 @@ for spine in ax.spines.values():
     spine.set_color('black')
 
 # ─────────────────────────────────────────────────────────────
-# Сохранение
+# Save
 # ─────────────────────────────────────────────────────────────
 plt.tight_layout()
 plt.subplots_adjust(top=0.92, bottom=0.30, left=0.1, right=0.95)
