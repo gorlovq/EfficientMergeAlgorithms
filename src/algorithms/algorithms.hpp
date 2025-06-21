@@ -10,6 +10,9 @@
 #include <iterator>
 #include <vector>
 #include <cmath>
+#include <concepts>
+#include <iostream>
+#include <cassert>
 
 #include "common.hpp"
 
@@ -1102,6 +1105,7 @@ IterContainer simple_kim_kutzner_merge(IterContainer& a, IterContainer& b) {
     return a;
 }
 
+
 template <typename ContainerIter>
 void hwang_lin_static_kutzner(ContainerIter begin, ContainerIter separator, ContainerIter end) {
     using value_t = std::iter_value_t<ContainerIter>;
@@ -1202,6 +1206,7 @@ IterContainer hwang_lin_static_kutzner_merge(IterContainer& a, IterContainer& b)
     return b;
 }
 
+
 // Unstable Core Algorithm (On optimal and efficient in place merging, Pok-Son Kim, Arne Kutzner)
 template <typename ContainerIter>
 void unstable_core_kim_kutzner(ContainerIter begin, ContainerIter separator, ContainerIter end) {
@@ -1301,5 +1306,104 @@ IterContainer unstable_core_kim_kutzner_merge(IterContainer& a, IterContainer& b
                 std::make_move_iterator(b.end()));
     b.clear();
     unstable_core_kim_kutzner(a.begin(), std::next(a.begin(), orig_a_size), a.end());
+    return a;
+}
+
+
+template <typename RandomIt>
+void split_merge_alg(RandomIt first1, RandomIt first2, RandomIt last) {
+    if (first1 >= first2 || first2 >= last) {
+        return;
+    }
+
+    auto len1 = std::distance(first1, first2);
+    auto len2 = std::distance(first2, last);
+    if (len1 == 0 || len2 == 0) return;
+
+
+    if (len1 == 1) {
+        auto it = std::lower_bound(first2, last, *first1);
+        std::rotate(first1, first2, it);
+        return;
+    }
+    if (len2 == 1) {
+        auto it = std::upper_bound(first1, first2, *first2);
+        std::rotate(it, first2, last);
+        return;
+    }
+
+
+    RandomIt l = first1, r = first2;
+    RandomIt l2 = first2, r2 = last;
+
+    // symmetric splitting: shrink [l,r) and [l2,r2) until both collapse to single elements
+    while (l < r && l2 < r2) {
+        RandomIt m  = l;
+        RandomIt m2 = l2;
+        if (l < r)   m  = l  + (r  - l)  / 2;
+        if (l2 < r2) m2 = l2 + (r2 - l2) / 2;
+
+        if (*m <= *m2) {
+            l  = m  + 1;
+            r2 = m2;
+        } else {
+            l2 = m2 + 1;
+            r  = m;
+        }
+    }
+
+    // now [r, first2) and [first2, l2) are the two middle runs to swap:
+    //    u′3 = [r, first2)   and   v′1 = [first2, l2)
+    std::rotate(r, first2, l2);
+
+    // recursive calls on the two halves:
+    //  left half:  [first1, r) U [r, r + (l2-first2))  == [first1, r + (l2-first2))
+    split_merge_alg(first1,
+                r,
+                r + (r2 - first2));
+
+    // right half: [l + (l2-first2), l2) U [l2, last) == [l + (l2-first2), last)
+    split_merge_alg(l + (l2 - first2),
+                l2,
+                last);
+}
+
+/*
+ * Algorithm: SplitMerge
+ *
+ * Publication:
+ *   Kim P. S., Kutzner A., A Simple Algorithm for Stable Minimum Storage Merging // 
+ *   Lecture Notes in Computer Science. – Vol. 4632. – Springer, 2007. – с.347-356.
+ *
+ * Implementation:
+ *   Developer: Sergei Gorlov
+ *
+ * Parameters:
+ *   IterContainer& a - container with a sorted sequence of smaller size.
+ *                      Elements must be in ascending order.
+ *                      IMPORTANT: The container must be accessed starting from its beginning.
+ *
+ *   IterContainer& b - container with a sorted sequence of larger size.
+ *                      Elements must be in ascending order.
+ *                      IMPORTANT: The container must be accessed starting from its beginning.
+ *
+ * Return Value:
+ *   IterContainer - merged container containing all elements from a and b, sorted in ascending order.
+ *
+ * Notes:
+ *   - Containers must support the methods size(), reserve(), begin(), end(), insert().
+ *   - It is assumed that the containers a and b are already sorted before calling the function.
+ * 
+ */
+template <typename IterContainer>
+IterContainer split_merge(IterContainer& a, IterContainer& b) {
+    auto a_size = a.size();
+
+    a.insert(a.end(),
+                std::make_move_iterator(b.begin()),
+                std::make_move_iterator(b.end()));
+
+    split_merge_alg(a.begin(), std::next(a.begin(), a_size), a.end());
+
     return a;
 }
