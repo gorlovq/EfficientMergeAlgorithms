@@ -15,8 +15,6 @@
 #include "framework/algorithm_tester.hpp"
 #include "framework/two_way_merge.hpp"
 #include "framework/split_merge.hpp"   
-#include "framework/std_merge.hpp"
-
 
 enum class OutputFormat {
     Console,
@@ -97,7 +95,6 @@ int main(int argc, char* argv[]) {
     algorithms.push_back(std::make_unique<FractialInsertionMergeAlgorithm>());
     algorithms.push_back(std::make_unique<SimpleKimKutznerMergeAlgorithm>());
     algorithms.push_back(std::make_unique<SplitMergeAlgorithm>());
-    algorithms.push_back(std::make_unique<StdMergeAlgorithm>());
     algorithms.push_back(std::make_unique<UnstableCoreKimKutznerMergeAlgorithm>());
 
     const std::string separator(REPORT_WIDTH, '=');
