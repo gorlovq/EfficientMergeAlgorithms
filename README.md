@@ -10,11 +10,12 @@
 - **Two Way Merge Algorithm**: The traditional method for merging two sorted arrays of lengths `n` and `m`.
 - **Hwang-Lin Merging Algorithm** by Donald Knuth: A classic algorithm designed to reduce the number of comparisons during the merge process.
 - **Hwang-Lin Static Merge Algorithm**: An variant of the Hwang-Lin algorithm that uses a static block size strategy. 
-- **Hwang-Lin Dynamic Merge Algorithm**: An variant of the Hwang-Lin algorithm that uses a dynamic blocks size strategy. Also known as the MAI THANH and T. D. BUI version. 
-- **Hwang-Lin Static Stable Merge Algorithm**: The same as Hwang-Lin Static Merge Algorithm but with guaranteed stability. This modification was inventted by Sergei Gorlov.
-- **Hwang-Lin Dynamic Stable Merge Algorithm**: The same as Hwang-Lin Dynamic Merge Algorithm but with guaranteed stability. This modification was inventted by Sergei Gorlov.
+- **Hwang-Lin Dynamic Merge Algorithm** by Mai Thanh and T.D. Bui: An variant of the Hwang-Lin algorithm that uses a dynamic blocks size strategy.
+- **Hwang-Lin Static Stable Merge Algorithm** by Sergei Gorlov: The same as Hwang-Lin Static Merge Algorithm but with guaranteed stability.
+- **Hwang-Lin Dynamic Stable Merge Algorithm** by Sergei Gorlov: The same as Hwang-Lin Dynamic Merge Algorithm but with guaranteed stability.
 - **Fractile Insertion Algorithm** by Michael Tanner: A stable merge by recursively median-inserting via exponential and binary search.
 - **SymMerge Algorithm** by Pok-Son Kim and Arne Kutzner: A sophisticated algorithm focusing on minimizing storage requirements during the merge process.
+- **SplitMerge Algorithm** by Pok-Son Kim and Arne Kutzner: A sophisticated algorithm using divide-and-conquer with symmetric splitting strategy for stable in-place merging.
 - **Unstable Core Algorithm** by Pok-Son Kim and Arne Kutzner:In-place $\sqrt(m)$-block rotations with a floating hole, unstable but near-linear moves.
 
 ## Building and Running
