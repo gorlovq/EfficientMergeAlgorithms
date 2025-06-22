@@ -1,5 +1,6 @@
+#!/usr/bin/env python3
 """
-Author: Sergei Gorlov.
+Author: Sergei Gorlov (edits by Igor Stikentzin).
 Description: Generates 3D plots from CSV results to visualize the number of comparisons and execution time for merge algorithms.
 """
 
