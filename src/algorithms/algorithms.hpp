@@ -536,6 +536,11 @@ IterContainer hwang_lin_dynamic_merge(IterContainer& a, IterContainer& b) {
 
         // Calculate block sizes for different nodes.
         int pow2d = pow2(d);
+
+        if (remainingB < pow2d) {
+            break;
+        }
+
         int c1 = pow2d;                    // Block size for Node A
         int c2 = (17 * pow2d) / 14;        // Block size for Node B
         int c3 = ((12 * pow2d) / 7) - 1;   // Block size for Node C

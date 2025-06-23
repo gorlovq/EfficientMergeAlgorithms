@@ -45,6 +45,7 @@ for csv_file in csv_files:
         # Get data boundaries
         x_min, x_max = np.min(x), np.max(x)
         y_min, y_max = np.min(y), np.max(y)
+        ax.set_xlim(x_min * 0.9, x_max * 1.1)
         
         # Create logarithmic grid for interpolation
         base_x = np.logspace(np.log10(x_min), np.log10(x_max), 50)
@@ -88,8 +89,9 @@ for csv_file in csv_files:
     fig.suptitle(f'Количество сравнений для {algorithm_name}', fontsize=16, y=0.88, x=0.57)
     
     # Set axis limits
-    ax.set_zlim(0, max(df['Comparisons']) * 1.1)
-    ax.set_ylim(y_min * 0.9, y_max * 1.1)
+    ax.set_zlim(min(df['Comparisons']) * 0.95, max(df['Comparisons']) * 1.05)
+    ax.set_ylim(y_min * 0.95, y_max * 1.05)
+    ax.set_xlim(x_min * 0.95, x_max * 1.05)
     
     # Set view angle
     ax.view_init(elev=20, azim=200)
